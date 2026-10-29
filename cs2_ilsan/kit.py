@@ -22,6 +22,9 @@ def to_object(mesh, name, specs, collection=None):
     bm = bmesh.new()
     bm.from_mesh(me)
     bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-5)   # 면 방향은 바뀌지 않는다
+    # 전부 삼각형으로: 베이크한 탄젠트 공간 노멀맵과 FBX 에 내보내는 탄젠트가 같은 삼각형에서 나오도록
+    # (글자 · 원기둥 뚜껑의 다각형은 FBX 탄젠트를 내보낼 수 없다)
+    bmesh.ops.triangulate(bm, faces=bm.faces[:], quad_method='BEAUTY', ngon_method='BEAUTY')
     bm.to_mesh(me)
     bm.free()
     obj = bpy.data.objects.new(name, me)
