@@ -90,14 +90,15 @@ def plan(st, alleys, margin=10.0, step=0.25):
     return out
 
 
-def to_game(items, st, dem, to_xz, sea_level):
-    """게임 좌표 (부지 중심 x, z), 회전, 지면 높이, 부지 사각형 모서리를 붙인다."""
+def to_game(items, st, dem, to_xz, ground):
+    """게임 좌표 (부지 중심 x, z), 회전, 지면 높이, 부지 사각형 모서리를 붙인다.
+    ground(gx, gz) -> 그 위치의 게임 지형 높이 (하이트맵에서 샘플)."""
     for it in items:
-        corners, c, n, z = _rect(st, it["s_mid"], it["front_offset"], it["width"], it["depth"])
+        corners, c, n, _ = _rect(st, it["s_mid"], it["front_offset"], it["width"], it["depth"])
         gx, gz = to_xz(*S.Street.latlon(dem, *c))
         it["game_x"], it["game_z"] = round(gx, 2), round(gz, 2)
         it["rotation_deg"] = round(math.degrees(math.atan2(-n[0], -n[1])) % 360, 1)   # 정면 = 도로 쪽
-        it["ground_m"] = round(z + sea_level, 2)
+        it["ground_m"] = round(float(ground(gx, gz)), 2)
         it["corners_game_xz"] = [[round(p, 2), round(q, 2)] for p, q in
                                  (to_xz(*S.Street.latlon(dem, *xy)) for xy in corners)]
     return items

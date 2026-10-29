@@ -87,7 +87,7 @@ def terrain(maps, info, half=700.0):
 def road(info, width=12.0):
     pts = info["street_centerline_game_xz"]
     P = np.array([[p["x"], p["z"]] for p in pts])
-    Z = np.array([p["ground_m"] - info["sea_level_m"] for p in pts]) + 0.15
+    Z = np.array([p["ground_m"] - info["sea_level_m"] for p in pts]) + 0.3
     t = np.gradient(P, axis=0)
     t /= np.linalg.norm(t, axis=1, keepdims=True)
     n = np.stack([t[:, 1], -t[:, 0]], 1)

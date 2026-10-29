@@ -56,6 +56,25 @@ class Mesh:
         f = [(i, (i + 1) % n, n) for i in range(n)] + [tuple(reversed(range(n)))]
         self.add(v, f, mat)
 
+    def slab(self, top, thickness, mat):
+        """위에서 보아 반시계 순서인 네 점(top)을 위면으로 하는 두께 있는 판 (경사 지붕 등)"""
+        bottom = [(x, y, z - thickness) for x, y, z in top]
+        self.add(bottom + list(top), _BOX_FACES, mat)
+
+    def tri_prism(self, a, b, c, offset, mat):
+        """삼각형 a-b-c 를 offset 벡터만큼 밀어낸 닫힌 삼각기둥 (박공 벽)"""
+        v = [a, b, c] + [tuple(p + o for p, o in zip(q, offset)) for q in (a, b, c)]
+        f = [(0, 2, 1), (3, 4, 5), (0, 1, 4, 3), (1, 2, 5, 4), (2, 0, 3, 5)]
+        self.add(v, f, mat)
+
+    def cylinder_x(self, x0, x1, cy, cz, r, mat, n=12):
+        """X 축 방향 원기둥 (말아 올린 비닐 등)"""
+        ring = [(cy + r * math.cos(2 * math.pi * i / n), cz + r * math.sin(2 * math.pi * i / n)) for i in range(n)]
+        v = [(x0, y, z) for y, z in ring] + [(x1, y, z) for y, z in ring]
+        f = [(i, (i + 1) % n, n + (i + 1) % n, n + i) for i in range(n)]
+        f += [tuple(reversed(range(n))), tuple(range(n, 2 * n))]
+        self.add(v, f, mat)
+
     def to_object(self, name, materials, collection=None):
         me = bpy.data.meshes.new(name)
         me.from_pydata(self.verts, [], self.faces)
@@ -165,6 +184,7 @@ def text_mesh(text, font, size, extrude=0.04):
     cu.extrude = extrude
     cu.align_x = 'CENTER'
     cu.align_y = 'CENTER'
+    cu.resolution_u = 4      # 글자 곡선 분할 (기본 12 는 폴리곤이 과함)
     ob = bpy.data.objects.new("tmp_text", cu)
     bpy.context.scene.collection.objects.link(ob)
     dg = bpy.context.evaluated_depsgraph_get()

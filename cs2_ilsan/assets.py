@@ -101,19 +101,22 @@ class Building:
                              (x0 - o, x0 + t + o, y0 + t, y1 - t), (x1 - t - o, x1 + o, y0 + t, y1 - t)):
             self.m.box(a, b, c, d, z + h, z + h + 0.08, cap)
 
-    def rail(self, x0, x1, y0, y1, z, h=1.1, glass=False):
+    def rail(self, x0, x1, y0, y1, z, h=1.1, glass=False, bars=False):
         """옥상·발코니 난간 (사각 둘레 중 지정 구간)"""
         if glass:
             self.m.box(x0, x1, y0, y1, z, z + h, "glass_rail", skip=(BOTTOM,))
             self.m.box(x0 - 0.02, x1 + 0.02, y0 - 0.02, y1 + 0.02, z + h, z + h + 0.05, "metal")
             return
         self.m.box(x0, x1, y0, y1, z + h - 0.05, z + h, "metal")
+        if bars:  # 가로 난간대 2줄 (현대식)
+            for zz in (z + h * 0.35, z + h * 0.68):
+                self.m.box(x0, x1, y0, y1, zz - 0.02, zz + 0.02, "metal")
         length = max(x1 - x0, y1 - y0)
-        n = max(int(length / 1.2), 1)
+        n = max(int(length / (1.5 if bars else 1.2)), 1)
         for k in range(n + 1):
             t = k / n
             px, py = x0 + (x1 - x0) * t, y0 + (y1 - y0) * t
-            self.m.box(px - 0.025, px + 0.025, py - 0.025, py + 0.025, z, z + h, "metal")
+            self.m.box(px - 0.03, px + 0.03, py - 0.03, py + 0.03, z, z + h, "metal")
 
     def ac_unit(self, x, y, z, facing="-y", bracket=False):
         """실외기: 몸체 + 팬 그릴 원판"""
@@ -208,7 +211,8 @@ class Building:
                 verts, faces, _, _, depth = tm
                 out_v = []
                 for lx, ly, lz in verts:
-                    d = 0.15 + out / 2 + (lx if sgn > 0 else -lx)
+                    # 판의 +u 면을 보는 사람에게는 +d(벽에서 멀어지는 쪽)가 왼쪽이므로 -lx
+                    d = 0.15 + out / 2 + (-lx if sgn > 0 else lx)
                     uu = u + sgn * (t / 2 + depth / 2 + lz)
                     x, y = f.xy(uu, d)
                     out_v.append((x, y, zc + ly))
@@ -254,11 +258,11 @@ EXTRA_MATERIALS = {
     "tank": {"color": (0.12, 0.30, 0.60), "rough": 0.4},
     "glass_rail": {"color": (0.30, 0.40, 0.42), "rough": 0.05, "metal": 0.2},
     "glass_tank": {"color": (0.35, 0.50, 0.55), "rough": 0.03, "metal": 0.1},
-    "curtain": {"color": (0.10, 0.30, 0.20), "color2": (0.07, 0.22, 0.15), "pattern": "stripes",
-                "scale": 0.25, "rough": 0.6},
+    "curtain": {"color": (0.12, 0.38, 0.26), "rough": 0.55},
     "tent": {"color": (0.75, 0.10, 0.08), "color2": (0.92, 0.90, 0.86), "pattern": "stripes",
              "scale": 0.9, "rough": 0.7, "control": (0, 1, 0)},
     "vinyl": {"color": (0.55, 0.60, 0.60), "rough": 0.08, "metal": 0.1},
+    "opening": {"color": (0.02, 0.02, 0.02), "rough": 0.9},
     "parasol": {"color": (0.92, 0.90, 0.84), "rough": 0.7, "control": (0, 1, 0)},
 }
 
@@ -387,7 +391,7 @@ def cafe01(font):
         f.box(cw0, cw1, zz - 0.05, zz + 0.05, 0, 0.14, "frame_dark")
     # 2층 발코니 (유리 난간)
     f.box(0.4, b.w - 0.4, g - 0.25, g, 0, 1.6, "concrete", attached=True)
-    b.rail(b.x0 + 0.45, b.x1 - 0.45, b.y0 - 1.6, b.y0 - 1.52, g, h=1.05, glass=True)
+    b.rail(b.x0 + 0.45, b.x1 - 0.45, b.y0 - 1.6, b.y0 - 1.52, g, h=1.05, bars=True)
     # 3층: 창 4개
     b.windows("front", [g + u], 4, 2.4, 1.9, sill=0.6, margin=0.8, mullions=1, lit=0.5)
     b.windows("left", [0, g, g + u], 2, 1.2, 1.4, margin=3.0)
@@ -402,9 +406,10 @@ def cafe01(font):
     # 루프탑: 데크, 유리 난간, 파라솔 테이블
     b.m.box(b.x0 + 0.25, b.x1 - 0.25, b.y0 + 0.25, b.y1 - 5.0, z, z + 0.15, "deck", skip=(BOTTOM,))
     zr = z + 0.15
-    b.rail(b.x0 + 0.3, b.x1 - 0.3, b.y0 + 0.3, b.y0 + 0.36, zr, glass=True)
-    b.rail(b.x0 + 0.3, b.x0 + 0.36, b.y0 + 0.36, b.y1 - 5.0, zr, glass=True)
-    b.rail(b.x1 - 0.36, b.x1 - 0.3, b.y0 + 0.36, b.y1 - 5.0, zr, glass=True)
+    # 유리 난간은 CS2 단일 불투명 재질로 구우면 벽처럼 보여서 가로대 난간을 쓴다
+    b.rail(b.x0 + 0.3, b.x1 - 0.3, b.y0 + 0.3, b.y0 + 0.36, zr, bars=True)
+    b.rail(b.x0 + 0.3, b.x0 + 0.36, b.y0 + 0.36, b.y1 - 5.0, zr, bars=True)
+    b.rail(b.x1 - 0.36, b.x1 - 0.3, b.y0 + 0.36, b.y1 - 5.0, zr, bars=True)
     for px in (b.x0 + 3.0, 0.0, b.x1 - 3.0):
         py = b.y0 + 3.5
         b.m.cylinder(px, py, 0.04, zr, zr + 2.4, "metal", n=8)
@@ -442,7 +447,14 @@ def motel01(font):
     f = b.face("front")
     # 로비 + 주차 입구(커튼)
     f.storefront(0.6, 9.0, 0.03, 3.6, bay=1.4, door=(4.8, 2.0))
-    f.box(11.0, b.w - 0.8, 0.03, 3.2, -0.05, 0.0, "curtain", attached=False)
+    # 드라이브인 주차 입구: 어두운 개구부 + 앞에 늘어뜨린 띠 커튼
+    f.box(11.0, b.w - 0.8, 0.03, 3.2, 0, 0.02, "opening")
+    strip, gap = 0.22, 0.03
+    uu = 11.05
+    while uu + strip <= b.w - 0.85:
+        f.box(uu, uu + strip, 0.35, 3.15, 0.10, 0.13, "curtain", attached=False)
+        uu += strip + gap
+    f.box(11.0, b.w - 0.8, 3.12, 3.2, 0.02, 0.16, "metal_dark")
     f.box(10.8, 11.0, 0.03, 3.4, 0, 0.3, "trim")
     f.box(b.w - 0.8, b.w - 0.6, 0.03, 3.4, 0, 0.3, "trim")
     f.box(10.8, b.w - 0.6, 3.2, 3.4, 0, 0.3, "trim")
@@ -507,12 +519,12 @@ def shop01(font):
     b.plinth()
     f = b.face("front")
     f.storefront(0.5, b.w - 0.5, 0.03, 3.25, bay=1.3, door=(2.2, 1.7))
-    f.box(0.2, b.w - 0.2, 3.3, 4.0, 0, 0.3, "sign")
-    f.box(0.2, b.w - 0.2, 3.3, 3.45, 0, 0.32, "accent")
-    f.box(0.2, b.w - 0.2, 3.85, 4.0, 0, 0.32, "accent")
-    t = fit_text("편의점 24", font, 5.0, 0.36, 0.04)
+    f.box(0.2, b.w - 0.2, 3.3, 4.2, 0, 0.3, "sign")
+    f.box(0.2, b.w - 0.2, 3.3, 3.42, 0, 0.32, "accent")
+    f.box(0.2, b.w - 0.2, 4.08, 4.2, 0, 0.32, "accent")
+    t = fit_text("편의점 24", font, 6.5, 0.52, 0.04)
     if t:
-        f.text(t, b.w / 2, 3.65, 0.3, "letters_dark")
+        f.text(t, b.w / 2, 3.75, 0.3, "letters_dark")
     b.mats["letters_dark"] = {"color": (0.05, 0.35, 0.18), "rough": 0.4, "emit": (0.1, 0.8, 0.4),
                               "emit_strength": 1.0}
     # 2~3층 발코니 (난간 + 실외기)
@@ -537,7 +549,7 @@ def shop01(font):
 
 
 def grill01(font):
-    """조개구이 — 2x2 셀, 단층 경량 철골 + 줄무늬 천막 박공 지붕, 투명 비닐 가림막, 원형 화로 테이블"""
+    """조개구이 — 2x2 셀, 단층 경량 철골 + 줄무늬 천막 박공 지붕, 말아 올린 비닐, 원형 화로 테이블"""
     b = Building((2, 2), 14.0, 11.0, seed=16)
     b.mats.update({
         "wall": {"color": (0.80, 0.80, 0.78), "rough": 0.5, "metal": 0.3},
@@ -560,23 +572,29 @@ def grill01(font):
     for px in np.linspace(x0 + 0.1, x1 - 0.1, 6):
         m.box(px - 0.06, px + 0.06, y0, y0 + 0.12, 0.12, h, "metal_dark", skip=(BOTTOM,))
     m.box(x0, x1, y0, y0 + 0.15, h - 0.2, h, "metal_dark")
-    m.box(x0 + 0.2, x1 - 0.2, y0 + 0.05, y0 + 0.08, 0.12, h - 0.2, "vinyl")
-    # 박공 천막 지붕
+    # 앞 비닐 가림막은 말아 올린 상태 (CS2 재질은 불투명이라 내리면 벽처럼 보인다)
+    m.cylinder_x(x0 + 0.2, x1 - 0.2, y0 - 0.1, h - 0.38, 0.14, "vinyl")
+    for px in np.linspace(x0 + 1.0, x1 - 1.0, 6):
+        m.box(px - 0.03, px + 0.03, y0 - 0.26, y0 - 0.22, h - 0.55, h - 0.2, "metal_dark")
+    # 박공 천막 지붕: 경사판 두 장 + 용마루, 양 끝은 삼각 박공벽
     ridge = h + 1.8
     ov = 0.5
+    t = 0.12
     ym = (y0 + y1) / 2
-    for (ya, yb, za, zb) in ((y0 - ov, ym, h - 0.3, ridge), (ym, y1 + ov, ridge, h - 0.3)):
-        steps = 8
-        for k in range(steps):
-            t0, t1 = k / steps, (k + 1) / steps
-            yy0, yy1 = ya + (yb - ya) * t0, ya + (yb - ya) * t1
-            zz = za + (zb - za) * (t0 + t1) / 2
-            m.box(x0 - ov, x1 + ov, min(yy0, yy1), max(yy0, yy1), zz - 0.05, zz + 0.05, "tent")
+    k = (ridge - h) / (ym - y0)
+    ze = h - k * ov
+    m.slab([(x0 - ov, y0 - ov, ze + t), (x1 + ov, y0 - ov, ze + t), (x1 + ov, ym, ridge + t),
+            (x0 - ov, ym, ridge + t)], t, "tent")
+    m.slab([(x0 - ov, ym, ridge + t), (x1 + ov, ym, ridge + t), (x1 + ov, y1 + ov, ze + t),
+            (x0 - ov, y1 + ov, ze + t)], t, "tent")
+    m.box(x0 - ov, x1 + ov, ym - 0.12, ym + 0.12, ridge + t - 0.02, ridge + t + 0.08, "metal_dark")
     for side_x in (x0, x1 - 0.12):
-        m.add([(side_x, y0, h), (side_x + 0.12, y0, h), (side_x + 0.12, ym, ridge), (side_x, ym, ridge)],
-              [(0, 1, 2, 3)], "wall_side")
-        m.add([(side_x, ym, ridge), (side_x + 0.12, ym, ridge), (side_x + 0.12, y1, h), (side_x, y1, h)],
-              [(0, 1, 2, 3)], "wall_side")
+        m.tri_prism((side_x, y0, h), (side_x, y1, h), (side_x, ym, ridge), (0.12, 0, 0), "wall_side")
+    # 안쪽: 계산대 + 음료 냉장고 (열린 앞면으로 보인다)
+    m.box(x0 + 1.0, x0 + 5.0, y1 - 1.0, y1 - 0.3, 0.12, 1.0, "stainless", skip=(BOTTOM,))
+    m.box(x1 - 2.3, x1 - 1.0, y1 - 0.9, y1 - 0.2, 0.12, 2.1, "ac", skip=(BOTTOM,))
+    Facade(m, "front", x1 - 2.3, x1 - 1.0, y1 - 0.9, y1 - 0.2).box(0.08, 1.22, 0.35, 1.95, 0, 0.02,
+                                                                     "glass_shop")
     # 화로 테이블 + 플라스틱 의자
     for i in range(3):
         for j in range(2):
@@ -592,6 +610,8 @@ def grill01(font):
     # 앞 지붕 위 간판
     f = Facade(m, "front", x0 + 1.0, x1 - 1.0, y0 - ov - 0.1, y0 - ov)
     f.box(0, f.width, h + 0.1, h + 1.3, 0, 0.12, "sign", attached=False)
+    for uu in (0.6, f.width - 0.6):  # 간판 지지대 (처마 위)
+        f.box(uu - 0.05, uu + 0.05, ze + t, h + 0.4, -0.25, -0.05, "metal_dark", attached=False)
     t = fit_text("조개구이 · 장어구이", font, f.width * 0.85, 0.75, 0.04)
     if t:
         f.text(t, f.width / 2, h + 0.7, 0.12, "letters_red")

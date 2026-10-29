@@ -139,6 +139,22 @@ def game_xy(lat, lon, lat0, lon0):
     return (lon - lon0) * m_lat * math.cos(math.radians(lat0)), (lat - lat0) * m_lat
 
 
+def ground_sampler(play):
+    """게임 좌표 (x 동, z 북) -> 하이트맵 지형의 게임 높이 (해수면 = SEA_LEVEL). 쌍선형."""
+    k = RES / PLAY_SIZE
+
+    def ground(gx, gz):
+        c = gx * k + RES / 2 - 0.5
+        r = RES / 2 - gz * k - 0.5
+        r0, c0 = int(np.floor(r)), int(np.floor(c))
+        fr, fc = r - r0, c - c0
+        a, b = play[r0, c0], play[r0, c0 + 1]
+        cc, d = play[r0 + 1, c0], play[r0 + 1, c0 + 1]
+        h = a * (1 - fr) * (1 - fc) + b * (1 - fr) * fc + cc * fr * (1 - fc) + d * fr * fc
+        return float(h) + SEA_LEVEL
+    return ground
+
+
 def draw_overlay(h, st, dem, lat0, lon0, items):
     """해안선(청록) · 도로 중심선(노랑) · 에셋 부지(종류별 색 윤곽, 앞선은 흰색)를 그린 참고 이미지"""
     rgba = np.zeros((RES, RES, 4), dtype=np.uint8)
@@ -212,7 +228,8 @@ def main():
 
     _, alleys = S.lay_lots(st.length)
     items = placement.plan(st, alleys)
-    placement.to_game(items, st, dem, lambda la, lo: game_xy(la, lo, lat0, lon0), SEA_LEVEL)
+    ground = ground_sampler(play)
+    placement.to_game(items, st, dem, lambda la, lo: game_xy(la, lo, lat0, lon0), ground)
     pngio.write_rgb8(os.path.join(args.out, "Ilsan_Overlay.png"), draw_overlay(play, st, dem, lat0, lon0, items))
     with open(os.path.join(args.out, "Ilsan_Placement.json"), "w", encoding="utf-8") as f:
         json.dump([{k: v for k, v in it.items() if k not in ("a0", "a1", "front_offset", "corners")} for it in items],
@@ -222,11 +239,11 @@ def main():
 
     road_mid = (S.PROMENADE_END + S.ROAD_END) / 2
     pts = []
-    for s in np.linspace(0, st.length, 34):
-        (x, y), _, z = st.frame(s, road_mid)
+    for s in np.append(np.arange(0, st.length, 5.0), st.length):  # 5 m 간격
+        (x, y), _, _ = st.frame(s, road_mid)
         gx, gz = game_xy(*S.Street.latlon(dem, x, y), lat0, lon0)
         pts.append({"station_m": round(float(s), 1), "x": round(gx, 1), "z": round(gz, 1),
-                    "ground_m": round(z + SEA_LEVEL, 2)})
+                    "ground_m": round(ground(gx, gz), 2)})
     info = {
         "center_lat": lat0, "center_lon": lon0,
         "playable_km": PLAY_SIZE / 1000, "world_km": WORLD_SIZE / 1000, "resolution": RES,
@@ -234,7 +251,7 @@ def main():
         "elevation_range_m": [float(play.min()), float(play.max())],
         "street_length_m": round(st.length, 1),
         "street_centerline_game_xz": pts,
-        "note": "게임 좌표: 맵 중심 원점, x=동쪽, z=북쪽. ground_m 은 게임 높이(해수면 40 m 기준).",
+        "note": "게임 좌표: 맵 중심 원점, x=동쪽, z=북쪽. ground_m 은 그 위치 하이트맵 지형의 게임 높이(해수면 40 m).",
     }
     with open(os.path.join(args.out, "Ilsan_Map.json"), "w", encoding="utf-8") as f:
         json.dump(info, f, ensure_ascii=False, indent=2)
