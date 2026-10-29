@@ -291,8 +291,47 @@ def tri_count(obj):
     return sum(len(p.vertices) - 2 for p in obj.data.polygons)
 
 
-def make_lod(obj, name, ratio):
-    """Decimate(Collapse) 로 LOD. UV 를 유지하므로 같은 텍스처를 쓴다."""
+# LOD 마다 지우는 디테일 (재질 이름 접두어). 작은 닫힌 조각(실외기 등)을 Collapse 로 줄이면 찌그러지므로
+# 디테일은 통째로 지우고, 남은 면은 같은 평면끼리만 합친다.
+LOD1_DROP = ("letters_glass", "blind", "grille", "rubber", "lamp", "crab_eye", "parking_line", "mailbox", "basin",
+             "styrofoam", "plastic", "gas_pipe")
+LOD2_DROP = LOD1_DROP + ("letters", "frame", "metal", "ac", "stainless", "vinyl", "glass_tank", "water", "picto",
+                         "parasol", "curtain")
+
+
+def tag_source_materials(obj):
+    """베이크 재질로 바꾸기 전에 면마다 원래 재질 번호를 'src_mat' 속성으로 남긴다 (LOD 디테일 제거용)"""
+    me = obj.data
+    attr = me.attributes.new("src_mat", 'INT', 'FACE')
+    attr.data.foreach_set("value", [p.material_index for p in me.polygons])
+    return [m.name.split("_", 1)[1] if "_" in m.name else m.name for m in me.materials]
+
+
+def _decimated_part(src_obj, keep, ratio):
+    """src_obj 메시에서 keep(bmesh 면 -> bool) 면만 남긴 사본을 Collapse 로 줄인 메시"""
+    tmp = src_obj.copy()
+    tmp.data = src_obj.data.copy()
+    bpy.context.scene.collection.objects.link(tmp)
+    bm = bmesh.new()
+    bm.from_mesh(tmp.data)
+    bmesh.ops.delete(bm, geom=[f for f in bm.faces if not keep(f, bm)], context='FACES')
+    bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context='VERTS')
+    bm.to_mesh(tmp.data)
+    bm.free()
+    mod = tmp.modifiers.new("dec", 'DECIMATE')
+    mod.ratio = ratio
+    mod.use_collapse_triangulate = True
+    dg = bpy.context.evaluated_depsgraph_get()
+    me = bpy.data.meshes.new_from_object(tmp.evaluated_get(dg))
+    data = tmp.data
+    bpy.data.objects.remove(tmp)
+    bpy.data.meshes.remove(data)
+    return me
+
+
+def make_lod(obj, name, ratio=1.0, drop=(), src_names=None, letters_ratio=None):
+    """LOD: drop 에 해당하는 재질의 면 삭제 → 같은 평면 합치기 → (letters_ratio) 글자만 Collapse 로 줄이기
+    → (ratio < 1 이면) 전체 Decimate(Collapse). UV 를 유지하므로 같은 텍스처를 쓴다."""
     lod = obj.copy()
     lod.data = obj.data.copy()
     lod.name = name
@@ -300,20 +339,44 @@ def make_lod(obj, name, ratio):
     bpy.context.scene.collection.objects.link(lod)
     bm = bmesh.new()
     bm.from_mesh(lod.data)
+    if drop and src_names:
+        layer = bm.faces.layers.int.get("src_mat")
+        doomed = [f for f in bm.faces if src_names[f[layer]].startswith(tuple(drop))]
+        bmesh.ops.delete(bm, geom=doomed, context='FACES')
+        loose = [v for v in bm.verts if not v.link_faces]
+        bmesh.ops.delete(bm, geom=loose, context='VERTS')
     bmesh.ops.dissolve_limit(bm, angle_limit=math.radians(1.0), verts=bm.verts, edges=bm.edges,
                              delimit={'UV', 'MATERIAL'})
     bm.to_mesh(lod.data)
     bm.free()
-    mod = lod.modifiers.new("lod", 'DECIMATE')
-    mod.ratio = ratio
-    mod.use_collapse_triangulate = True
-    dg = bpy.context.evaluated_depsgraph_get()
-    me = bpy.data.meshes.new_from_object(lod.evaluated_get(dg))
-    old = lod.data
-    lod.modifiers.clear()
-    lod.data = me
-    bpy.data.meshes.remove(old)
+    if letters_ratio and src_names:
+        def is_letter(f, bm_):
+            return src_names[f[bm_.faces.layers.int.get("src_mat")]].startswith("letters")
+        letters = _decimated_part(lod, is_letter, letters_ratio)
+        bm = bmesh.new()
+        bm.from_mesh(lod.data)
+        bmesh.ops.delete(bm, geom=[f for f in bm.faces if is_letter(f, bm)], context='FACES')
+        bm.from_mesh(letters)                                 # 줄인 글자를 다시 합친다
+        bm.to_mesh(lod.data)
+        bm.free()
+        bpy.data.meshes.remove(letters)
+    me = lod.data
+    if ratio < 1.0:
+        mod = lod.modifiers.new("lod", 'DECIMATE')
+        mod.ratio = ratio
+        mod.use_collapse_triangulate = True
+        dg = bpy.context.evaluated_depsgraph_get()
+        me = bpy.data.meshes.new_from_object(lod.evaluated_get(dg))
+        old = lod.data
+        lod.modifiers.clear()
+        lod.data = me
+        bpy.data.meshes.remove(old)
     me.name = name
+    bm = bmesh.new()                       # 평면 정리로 생긴 다각형이 남아 있으면 삼각형으로 (FBX 탄젠트)
+    bm.from_mesh(me)
+    bmesh.ops.triangulate(bm, faces=[f for f in bm.faces if len(f.verts) > 3])
+    bm.to_mesh(me)
+    bm.free()
     return lod
 
 

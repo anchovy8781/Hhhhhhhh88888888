@@ -59,6 +59,16 @@ def text_mesh(text, font, size, extrude=0.04):
     bpy.data.meshes.remove(me)
     if len(co) == 0:
         return None
+    # 글자 뒷면은 항상 간판 · 벽 · 유리에 붙어 보이지 않으므로 뺀다 (글자 삼각형의 약 1/3)
+    keep = []
+    for f in faces:
+        nz = 0.0
+        for i in range(len(f)):
+            a, b = co[f[i]], co[f[(i + 1) % len(f)]]
+            nz += (a[0] - b[0]) * (a[1] + b[1])
+        if nz > -1e-9:
+            keep.append(f)
+    faces = keep
     lo, hi = co.min(0), co.max(0)
     co -= (lo + hi) / 2
     return [tuple(v) for v in co], faces, hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]

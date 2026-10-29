@@ -91,12 +91,13 @@ def make_asset(name, font_path, out_root, tex=None, preview_dir=None, do_bake=Tr
     out_dir = os.path.join(out_root, name)
     bake.unwrap(obj)
     paths = bake.bake_texture_set(obj, name, out_dir, size=tex)
+    src_names = bake.tag_source_materials(obj)
     mat = bake.baked_material(name, paths)
     bake.replace_materials(obj, mat)
     bake.export_fbx(obj, os.path.join(out_dir, name + ".fbx"))
     lods = []
-    for level, ratio in ((1, 0.30), (2, 0.07)):
-        lod = bake.make_lod(obj, f"{name}_LOD{level}", ratio)
+    for level, drop, letters_ratio in ((1, bake.LOD1_DROP, 0.3), (2, bake.LOD2_DROP, None)):
+        lod = bake.make_lod(obj, f"{name}_LOD{level}", 1.0, drop, src_names, letters_ratio)
         bake.export_fbx(lod, os.path.join(out_dir, lod.name + ".fbx"))
         lods.append(bake.tri_count(lod))
         lod.hide_render = True
