@@ -1,0 +1,103 @@
+"""일산지 거리 위 에셋 배치 계획 (게임 좌표). bpy 없이 동작.
+
+게임에서 '소형 2차로 도로'(폭 약 16 m)를 해변 도로 중심선을 따라 그리면,
+도로 중심에서 ROAD_HALF 만큼 떨어진 곳이 부지 앞선이 된다.
+"""
+
+import math
+
+import numpy as np
+
+import catalog
+import street as S
+
+ROAD_HALF = 8.0                      # 도로 중심 -> 부지 앞선 (CS2 소형 도로 반폭)
+ROAD_CENTER = (S.PROMENADE_END + S.ROAD_END) / 2
+GAP = 0.0                            # 부지 사이 간격 (CS2 부지는 셀 단위로 맞붙는다)
+
+
+def frontage(st):
+    """부지 앞선 곡선과 그 위 누적 길이(m), 해안선 station 과의 대응"""
+    off = ROAD_CENTER + ROAD_HALF
+    pts = st.at_offset(off)
+    arc = S.cumulative(pts)
+    return off, arc
+
+
+def _rect(st, s_mid, off, width, depth):
+    """앞선 중앙 station 에서 도로를 향한 부지 사각형 (로컬 xy, 앞 두 점 먼저)과 중심·법선"""
+    (fx, fy), n, z = st.frame(s_mid, off)
+    n = np.asarray(n)
+    t = np.array([n[1], -n[0]])
+    c = np.array([fx, fy]) + n * depth / 2
+    hw, hd = width / 2, depth / 2
+    corners = np.array([c + t * a + n * b for a, b in ((-hw, -hd), (hw, -hd), (hw, hd), (-hw, hd))])
+    return corners, c, n, z
+
+
+def overlaps(p, q, eps=0.05):
+    """두 볼록 사각형이 eps 이상 겹치는지 (분리축 검사)"""
+    for poly in (p, q):
+        for i in range(4):
+            e = poly[(i + 1) % 4] - poly[i]
+            ax = np.array([-e[1], e[0]]) / (np.hypot(*e) + 1e-12)
+            pa, qa = p @ ax, q @ ax
+            if pa.max() <= qa.min() + eps or qa.max() <= pa.min() + eps:
+                return False
+    return True
+
+
+def plan(st, alleys, margin=10.0, step=0.25):
+    """부지 앞선 곡선 위에서 길이를 재며 골목 사이 구간을 SEQUENCE 순서로 채운다.
+
+    곡선 바깥쪽(육지)으로 갈수록 길이가 늘어나므로 해안선 station 이 아니라 앞선 길이로 잰다.
+    곡선이 안쪽으로 휜 곳에서는 이웃 부지 뒤쪽이 겹치므로, 겹치지 않을 때까지 앞으로 민다.
+    반환: [{"asset", "a0", "a1", "s_mid", "width", "depth", "front_offset", "corners"} ...]
+    """
+    off, arc = frontage(st)
+    to_arc = lambda s: float(np.interp(s, st.s, arc))  # noqa: E731
+    to_s = lambda a: float(np.interp(a, arc, st.s))  # noqa: E731
+    total = float(arc[-1])
+    cuts = [margin] + sorted(to_arc(x) for x in alleys) + [total - margin]
+    seq = list(catalog.SEQUENCE)
+    k = 0
+    out = []
+    for i, (a, b) in enumerate(zip(cuts[:-1], cuts[1:])):
+        pos = a + (4.0 if i > 0 else 0.0)              # 골목 반폭(약 4 m) 띄움
+        end = b - (4.0 if i < len(cuts) - 2 else 0.0)
+        prev = None
+        tries = 0
+        while tries < len(seq):
+            name = seq[k % len(seq)]
+            cw, cd, _, _ = catalog.ASSETS[name]
+            w, d = cw * catalog.CELL, cd * catalog.CELL
+            p = pos
+            while p + w <= end:
+                corners = _rect(st, to_s(p + w / 2), off, w, d)[0]
+                if prev is None or not overlaps(prev, corners):
+                    break
+                p += step
+            if p + w <= end:
+                out.append({"asset": name, "a0": p, "a1": p + w, "s_mid": to_s(p + w / 2),
+                            "width": w, "depth": d, "front_offset": off, "corners": corners})
+                prev = corners
+                pos = p + w + GAP
+                k += 1
+                tries = 0
+            else:
+                k += 1          # 이 자리에 안 맞으면 다음 후보
+                tries += 1
+    return out
+
+
+def to_game(items, st, dem, to_xz, sea_level):
+    """게임 좌표 (부지 중심 x, z), 회전, 지면 높이, 부지 사각형 모서리를 붙인다."""
+    for it in items:
+        corners, c, n, z = _rect(st, it["s_mid"], it["front_offset"], it["width"], it["depth"])
+        gx, gz = to_xz(*S.Street.latlon(dem, *c))
+        it["game_x"], it["game_z"] = round(gx, 2), round(gz, 2)
+        it["rotation_deg"] = round(math.degrees(math.atan2(-n[0], -n[1])) % 360, 1)   # 정면 = 도로 쪽
+        it["ground_m"] = round(z + sea_level, 2)
+        it["corners_game_xz"] = [[round(p, 2), round(q, 2)] for p, q in
+                                 (to_xz(*S.Street.latlon(dem, *xy)) for xy in corners)]
+    return items
