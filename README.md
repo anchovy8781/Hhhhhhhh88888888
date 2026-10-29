@@ -3,6 +3,8 @@
 블렌더에서 모델링한 건물·소품을 **Cities: Skylines II 에셋 임포터**가 받아들이는 형태로
 정리하는 가이드와 블렌더 애드온(`cs2_asset_tools`)입니다.
 
+> 🗺️ **예제 장면:** [`ulsan_ilsan/`](ulsan_ilsan/) — 실제 고도 데이터로 만든 울산 동구 일산동(일산해수욕장·대왕암공원) 블렌더 장면
+
 > ⚠️ CS2 모딩 규격은 패치마다 바뀔 수 있습니다. 아래 내용은 공식 위키와 커뮤니티 문서를
 > 바탕으로 정리했으니, 큰 작업 전에 작은 테스트 에셋으로 한 번 임포트해 보세요.
 
@@ -119,7 +121,7 @@ python3 build_addon.py        # → dist/cs2_asset_tools.zip
 ## 7. 개발
 
 ```bash
-python3 -m unittest discover -s tests   # 블렌더 없이 패킹/검사 로직 테스트
+python3 -m unittest discover -s tests   # 블렌더 없이 패킹/검사/지형 로직 테스트
 ```
 
 - `cs2_asset_tools/core.py` – 블렌더 비의존 로직 (이름 규칙, 채널 패킹, 텍스처 검사)
