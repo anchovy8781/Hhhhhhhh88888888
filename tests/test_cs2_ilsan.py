@@ -88,7 +88,9 @@ class PlacementTest(unittest.TestCase):
         cls.dem = dem
         cls.st = S.Street(dem)
         _, alleys = S.lay_lots(cls.st.length)
-        cls.items = P.plan(cls.st, alleys)
+        cls.land = P.plan(cls.st, alleys)
+        cls.sea = P.plan_seaside(cls.st)
+        cls.items = cls.land + cls.sea
 
     def test_lots_are_cell_sized_rectangles(self):
         for it in self.items:
@@ -107,16 +109,21 @@ class PlacementTest(unittest.TestCase):
         for it in self.items:
             front_mid = (it["corners"][0] + it["corners"][1]) / 2
             back_mid = (it["corners"][2] + it["corners"][3]) / 2
-            s_f, d_f, _ = self.st.project(front_mid[None])
-            s_b, d_b, _ = self.st.project(back_mid[None])
-            self.assertLess(d_f[0], d_b[0])                 # 앞이 바다(도로) 쪽
-            self.assertAlmostEqual(d_f[0], P.ROAD_CENTER + P.ROAD_HALF, delta=1.0)
+            _, d_f, _ = self.st.project(front_mid[None])
+            _, d_b, _ = self.st.project(back_mid[None])
+            if it["side"] == "land":
+                self.assertLess(d_f[0], d_b[0])             # 뒤가 육지 쪽
+                self.assertAlmostEqual(d_f[0], P.ROAD_CENTER + P.ROAD_HALF, delta=1.0)
+            else:
+                self.assertGreater(d_f[0], d_b[0])          # 뒤가 바다 쪽, 정면은 도로
+                self.assertAlmostEqual(d_f[0], P.ROAD_CENTER - P.ROAD_HALF, delta=1.0)
             lat, lon = S.Street.latlon(self.dem, *back_mid)
             self.assertGreater(self.dem.sample(lat, lon), 0)
 
     def test_mix_of_assets(self):
-        used = {it["asset"] for it in self.items}
-        self.assertEqual(used, set(catalog.ASSETS))
+        self.assertEqual({it["asset"] for it in self.items}, set(catalog.ASSETS))
+        seq = [it["asset"] for it in self.land]
+        self.assertEqual(sum(a == b for a, b in zip(seq, seq[1:])), 0)   # 같은 건물이 나란히 서지 않음
 
 
 if __name__ == "__main__":

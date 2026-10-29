@@ -174,8 +174,10 @@ def draw_overlay(h, st, dem, lat0, lon0, items):
             if 0 <= x < RES and 0 <= y < RES:
                 rgba[y, x] = color
 
-    colors = {"횟집": (255, 80, 60, 255), "카페": (170, 110, 60, 255), "숙박": (200, 80, 220, 255),
-              "상가": (80, 200, 90, 255), "조개구이": (255, 170, 0, 255)}
+    colors = {"횟집": (255, 80, 60, 255), "대게": (255, 40, 120, 255), "조개구이": (255, 170, 0, 255),
+              "카페": (170, 110, 60, 255), "치킨": (255, 230, 60, 255), "상가": (80, 200, 90, 255),
+              "근린상가": (60, 160, 255, 255), "시장": (40, 90, 255, 255), "숙박": (200, 80, 220, 255),
+              "펜션": (150, 220, 255, 255), "주거": (200, 200, 200, 255), "화장실": (0, 255, 160, 255)}
     prev = None
     for s in np.arange(0, st.length, 1.0):
         (x, y), _, _ = st.frame(s, placement.ROAD_CENTER)
@@ -185,7 +187,7 @@ def draw_overlay(h, st, dem, lat0, lon0, items):
         prev = p
     for it in items:
         c = [to_px(*xz) for xz in it["corners_game_xz"]]
-        col = colors[catalog.ASSETS[it["asset"]][2]]
+        col = colors.get(catalog.ASSETS[it["asset"]][2], (255, 255, 255, 255))
         line(c[0], c[1], (255, 255, 255, 255))
         for i in (1, 2, 3):
             line(c[i], c[(i + 1) % 4], col)
@@ -196,11 +198,12 @@ def write_placement_md(path, items):
     lines = ["# 일산지 거리 에셋 배치표", "",
              "게임 좌표: 맵 중심 원점, x = 동쪽, z = 북쪽 (m). 회전 = 건물 정면(도로 쪽)이 향하는 방위, "
              "북쪽 0° 에서 시계 방향. 지면 = 게임 높이 (해수면 40 m).", "",
-             "| # | 에셋 | 간판 | 부지(셀) | x | z | 회전 | 지면 |", "|---|---|---|---|---|---|---|---|"]
+             "| # | 쪽 | 에셋 | 간판 | 부지(셀) | x | z | 회전 | 지면 |", "|---|---|---|---|---|---|---|---|---|"]
     for i, it in enumerate(items, 1):
-        cw, cd, kind, title = catalog.ASSETS[it["asset"]]
-        lines.append(f"| {i} | `{it['asset']}` | {title} | {cw}×{cd} | {it['game_x']:.1f} | {it['game_z']:.1f} "
-                     f"| {it['rotation_deg']:.1f}° | {it['ground_m']:.1f} m |")
+        cw, cd, kind, title = catalog.ASSETS[it["asset"]][:4]
+        side = "상가 줄" if it.get("side", "land") == "land" else "백사장 쪽"
+        lines.append(f"| {i} | {side} | `{it['asset']}` | {title} | {cw}×{cd} | {it['game_x']:.1f} "
+                     f"| {it['game_z']:.1f} | {it['rotation_deg']:.1f}° | {it['ground_m']:.1f} m |")
     with open(path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
 
@@ -227,7 +230,7 @@ def main():
     pngio.write_gray16(os.path.join(args.out, "Ilsan_Worldmap.png"), to_u16(world))
 
     _, alleys = S.lay_lots(st.length)
-    items = placement.plan(st, alleys)
+    items = placement.plan(st, alleys) + placement.plan_seaside(st)
     ground = ground_sampler(play)
     placement.to_game(items, st, dem, lambda la, lo: game_xy(la, lo, lat0, lon0), ground)
     pngio.write_rgb8(os.path.join(args.out, "Ilsan_Overlay.png"), draw_overlay(play, st, dem, lat0, lon0, items))
