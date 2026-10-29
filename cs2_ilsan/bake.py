@@ -19,8 +19,13 @@ from cs2_asset_tools import core  # noqa: E402
 # UV
 # ---------------------------------------------------------------------------
 
-def unwrap(obj, margin=0.003):
-    """각진 건물에 맞게 Smart UV Project 후 섬 정리"""
+# UV 우선순위: 재질 이름(에셋 이름 뒤 부분)이 이 접두어로 시작하면 UV 섬을 그만큼 키워 텍스처를 더 준다.
+# 작은 간판 글자 · 얇은 창틀이 몇 픽셀에 뭉개지지 않게 한다.
+UV_PRIORITY = {"letters": 4.0, "frame": 1.5, "grille": 1.5, "metal": 1.3, "sign": 1.3, "picto": 2.0}
+
+
+def unwrap(obj, margin=0.003, priority=UV_PRIORITY):
+    """각진 건물에 맞게 Smart UV Project → 우선순위 재질의 섬 확대 → 섬 정리"""
     bpy.ops.object.select_all(action='DESELECT')
     obj.select_set(True)
     bpy.context.view_layer.objects.active = obj
@@ -28,8 +33,69 @@ def unwrap(obj, margin=0.003):
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.uv.smart_project(angle_limit=math.radians(60), island_margin=margin,
                              area_weight=0.0, correct_aspect=True, scale_to_bounds=False)
+    if priority:
+        bpy.ops.object.mode_set(mode='OBJECT')
+        scale_islands(obj, priority)
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.uv.pack_islands(rotate=True, margin=margin)
     bpy.ops.object.mode_set(mode='OBJECT')
+
+
+def scale_islands(obj, priority):
+    """우선순위 재질 면들의 UV 섬(같은 UV 를 공유하며 이어진 면 묶음)을 각자 중심에서 확대"""
+    me = obj.data
+    factor = {}
+    for i, m in enumerate(me.materials):
+        key = m.name.split("_", 1)[1] if "_" in m.name else m.name
+        for prefix, k in priority.items():
+            if key.startswith(prefix):
+                factor[i] = k
+                break
+    if not factor:
+        return 0
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    uv = bm.loops.layers.uv.active
+    faces = [f for f in bm.faces if f.material_index in factor]
+    parent = {f.index: f.index for f in faces}
+
+    def find(a):
+        while parent[a] != a:
+            parent[a] = parent[parent[a]]
+            a = parent[a]
+        return a
+
+    def uv_at(face, vert):
+        for loop in face.loops:
+            if loop.vert is vert:
+                return loop[uv].uv
+        return None
+
+    for f in faces:
+        for e in f.edges:
+            for g in e.link_faces:
+                if g is f or g.index not in parent or g.material_index != f.material_index:
+                    continue
+                same = all((uv_at(f, v) - uv_at(g, v)).length < 1e-6 for v in e.verts)
+                if same:
+                    ra, rb = find(f.index), find(g.index)
+                    if ra != rb:
+                        parent[ra] = rb
+    islands = {}
+    for f in faces:
+        islands.setdefault(find(f.index), []).append(f)
+    for group in islands.values():
+        k = factor[group[0].material_index]
+        loops = [loop for f in group for loop in f.loops]
+        cx = sum(loop[uv].uv.x for loop in loops) / len(loops)
+        cy = sum(loop[uv].uv.y for loop in loops) / len(loops)
+        for loop in loops:
+            loop[uv].uv.x = cx + (loop[uv].uv.x - cx) * k
+            loop[uv].uv.y = cy + (loop[uv].uv.y - cy) * k
+    bm.to_mesh(me)
+    bm.free()
+    return len(islands)
 
 
 # ---------------------------------------------------------------------------
