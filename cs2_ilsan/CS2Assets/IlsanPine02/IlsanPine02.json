@@ -1,0 +1,26 @@
+{
+  "name": "IlsanPine02",
+  "title": "해송 (굽은 나무)",
+  "kind": "조경",
+  "type": "prop",
+  "lot_cells": [
+    1,
+    1
+  ],
+  "lot_m": [
+    8.0,
+    8.0
+  ],
+  "footprint_m": [
+    8.0,
+    8.0
+  ],
+  "height_m": 7.02,
+  "lod0_tris": 2172,
+  "openings": 0,
+  "texture": 1024,
+  "lod_tris": [
+    2172,
+    2172
+  ]
+}
