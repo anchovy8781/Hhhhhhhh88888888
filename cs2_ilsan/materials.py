@@ -34,9 +34,10 @@ BASE = {
     "glass_lit": {"color": (0.05, 0.07, 0.08), "color2": (0.06, 0.08, 0.09), "pattern": "noise", "scale": 0.35,
                   "rough": 0.05, "metal": 0.6, "emit": (1.0, 0.80, 0.52), "emit2": (0.42, 0.28, 0.15),
                   "emit_strength": 0.9},
-    # 상점 유리: 유리 너머 진열대 · 천장 조명 (칸 = 진열대, 줄눈 = 선반 테두리)
-    "glass_shop": {"color": (0.11, 0.13, 0.13), "color2": (0.14, 0.15, 0.15), "pattern": "tile", "scale": (1.1, 0.5),
-                   "mortar": 0.035, "mortar_color": (0.05, 0.05, 0.05), "rough": 0.06, "metal": 0.3,
+    # 상점 유리: 유리 너머 진열대 · 천장 조명 (칸 = 진열대, 줄눈 = 선반 · 기둥). 엇갈리지 않는 격자여야
+    # 블록 벽처럼 보이지 않는다
+    "glass_shop": {"color": (0.09, 0.11, 0.12), "color2": (0.12, 0.13, 0.14), "pattern": "panel", "scale": (1.8, 0.42),
+                   "mortar": 0.02, "mortar_color": (0.04, 0.04, 0.045), "rough": 0.06, "metal": 0.3,
                    "emit": (1.0, 0.86, 0.66), "emit2": (0.10, 0.08, 0.06), "emit_strength": 0.6},
     "glass_door": {"color": (0.08, 0.10, 0.10), "rough": 0.05, "metal": 0.4},
     "glass_frost": {"color": (0.55, 0.60, 0.62), "rough": 0.3, "metal": 0.1},
