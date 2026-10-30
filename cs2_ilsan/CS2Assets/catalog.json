@@ -960,5 +960,31 @@
       8866,
       620
     ]
+  },
+  {
+    "name": "IlsanOliveDaiso",
+    "title": "올리브영 · 다이소",
+    "kind": "생활용품",
+    "type": "building",
+    "lot_cells": [
+      3,
+      3
+    ],
+    "lot_m": [
+      24.0,
+      24.0
+    ],
+    "footprint_m": [
+      22.0,
+      17.0
+    ],
+    "height_m": 16.9,
+    "lod0_tris": 41232,
+    "openings": 19,
+    "texture": 2048,
+    "lod_tris": [
+      17045,
+      3852
+    ]
   }
 ]
