@@ -1,0 +1,26 @@
+{
+  "name": "IlsanStreamBridge",
+  "title": "하천 하구 보행교",
+  "kind": "다리",
+  "type": "plaza",
+  "lot_cells": [
+    2,
+    2
+  ],
+  "lot_m": [
+    16.0,
+    16.0
+  ],
+  "footprint_m": [
+    16.0,
+    16.0
+  ],
+  "height_m": 2.13,
+  "lod0_tris": 2062,
+  "openings": 0,
+  "texture": 1024,
+  "lod_tris": [
+    1802,
+    1218
+  ]
+}
