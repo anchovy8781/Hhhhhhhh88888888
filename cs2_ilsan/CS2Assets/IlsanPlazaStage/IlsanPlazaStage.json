@@ -1,0 +1,26 @@
+{
+  "name": "IlsanPlazaStage",
+  "title": "청년광장 버스킹 무대",
+  "kind": "광장",
+  "type": "plaza",
+  "lot_cells": [
+    3,
+    4
+  ],
+  "lot_m": [
+    24.0,
+    32.0
+  ],
+  "footprint_m": [
+    24.0,
+    32.0
+  ],
+  "height_m": 8.9,
+  "lod0_tris": 17394,
+  "openings": 0,
+  "texture": 2048,
+  "lod_tris": [
+    8862,
+    4970
+  ]
+}
