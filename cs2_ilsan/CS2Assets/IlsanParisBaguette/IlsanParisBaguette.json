@@ -1,0 +1,26 @@
+{
+  "name": "IlsanParisBaguette",
+  "title": "파리바게뜨",
+  "kind": "베이커리",
+  "type": "building",
+  "lot_cells": [
+    2,
+    2
+  ],
+  "lot_m": [
+    16.0,
+    16.0
+  ],
+  "footprint_m": [
+    13.0,
+    10.0
+  ],
+  "height_m": 9.4,
+  "lod0_tris": 29037,
+  "openings": 11,
+  "texture": 2048,
+  "lod_tris": [
+    6517,
+    1328
+  ]
+}
