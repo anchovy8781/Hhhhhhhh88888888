@@ -1,0 +1,26 @@
+{
+  "name": "IlsanBeachLandmark",
+  "title": "일산해수욕장 삼각 조형물",
+  "kind": "조형물",
+  "type": "plaza",
+  "lot_cells": [
+    2,
+    2
+  ],
+  "lot_m": [
+    16.0,
+    16.0
+  ],
+  "footprint_m": [
+    16.0,
+    16.0
+  ],
+  "height_m": 9.65,
+  "lod0_tris": 6496,
+  "openings": 0,
+  "texture": 1024,
+  "lod_tris": [
+    1996,
+    80
+  ]
+}
