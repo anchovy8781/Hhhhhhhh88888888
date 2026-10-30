@@ -9,7 +9,8 @@ import math
 import random
 
 import materials
-from geom import (BOTTOM, FIXTURE, FOREGROUND, OPENING, SIGN, Box3, Facade, Mesh, box_conflicts, conflicts)
+from geom import (BOTTOM, FIXTURE, FOREGROUND, OPENING, SIGN, Box3, Facade, Mesh, box_conflicts, conflicts,
+                  rects_minus)
 
 CELL = 8.0
 SIDES = ("front", "back", "left", "right")
@@ -30,6 +31,7 @@ class Building:
         self.roof = []
         self.mats = {}
         self.zones = {}
+        self.vols = {}          # 추가 몸체: 이름 -> (x0, x1, y0, y1, 바닥, 높이)
         self.height = 0.0
         self.top = 0.0          # 지붕 구조물 포함 최고 높이 (참고용)
         if self.y1 > self.ld / 2 + 1e-6 or width > self.lw + 1e-6:
@@ -38,7 +40,25 @@ class Building:
     # -- 기본 ---------------------------------------------------------------
 
     def face(self, side):
+        """'front' 처럼 면 이름만 주면 기본 몸체, 'tower:front' 처럼 주면 volume() 으로 만든 몸체의 면"""
+        if ":" in side:
+            key, s = side.split(":")
+            x0, x1, y0, y1 = self.vols[key][:4]
+            return Facade(self.m, s, x0, x1, y0, y1, self.slots, key=side)
         return Facade(self.m, side, self.x0, self.x1, self.y0, self.y1, self.slots)
+
+    def volume(self, key, x0, x1, y0, y1, base, height, zones=None, roof="roof", roof_holes=()):
+        """추가 몸체 (저층부 위의 탑, 엘리베이터 코어 등). 벽은 finalize() 에서 개구부를 뚫어 만든다.
+        zones = {면: [(z0, z1, 재질[, u0, u1])]}, roof_holes = 지붕에서 비울 사각형 (위에 다른 몸체가 서는 곳)."""
+        self.vols[key] = (x0, x1, y0, y1, base, height)
+        for s in SIDES:
+            self.zones[f"{key}:{s}"] = [(base, height, "wall" if s == "front" else "wall_side")]
+        for s, z in (zones or {}).items():
+            self.zones[f"{key}:{s}"] = z
+        self.top = max(self.top, height)
+        if roof:
+            for a, b, c, d in rects_minus(x0, x1, y0, y1, roof_holes):
+                self.m.quad((a, c, height), (b, c, height), (b, d, height), (a, d, height), roof)
 
     def in_lot(self, f, u0, u1, d_out, margin=0.05):
         """파사드 위 구간 (u0..u1) 을 d_out 만큼 내민 것이 부지 안에 들어가는지 (옆 부지와 닿지 않게)"""
@@ -64,7 +84,7 @@ class Building:
         hw, hd = self.lw / 2 - 0.05, self.ld / 2 - 0.05
         self.m.box(-hw, hw, -hd, hd, -0.30, 0.03, mat, skip=(BOTTOM,))
 
-    def shell(self, height, base=0.03, zones=None, roof="roof"):
+    def shell(self, height, base=0.03, zones=None, roof="roof", roof_holes=()):
         """건물 몸체: 지붕면은 바로 만들고, 벽은 finalize() 에서 개구부를 뚫어 만든다.
         zones = {면: [(z0, z1, 재질)]} — 기본은 정면 'wall', 나머지 'wall_side'."""
         self.height, self.base = height, base
@@ -73,9 +93,9 @@ class Building:
             self.zones[s] = [(base, height, "wall" if s == "front" else "wall_side")]
         if zones:
             self.zones.update(zones)
-        x0, x1, y0, y1 = self.x0, self.x1, self.y0, self.y1
         if roof:
-            self.m.quad((x0, y0, height), (x1, y0, height), (x1, y1, height), (x0, y1, height), roof)
+            for a, b, c, d in rects_minus(self.x0, self.x1, self.y0, self.y1, roof_holes):
+                self.m.quad((a, c, height), (b, c, height), (b, d, height), (a, d, height), roof)
 
     def finalize(self):
         for side, zones in self.zones.items():
@@ -91,19 +111,23 @@ class Building:
         probe = Box3(x0, x1, y0, y1, z0, z1)
         return not any(probe.overlaps(b) for b in self.roof)
 
-    def parapet(self, h=1.0, t=0.22, mat="wall_side", cap="trim"):
-        x0, x1, y0, y1, z = self.x0, self.x1, self.y0, self.y1, self.height
+    def parapet(self, h=1.0, t=0.22, mat="wall_side", cap="trim", vol=None):
+        if vol:
+            x0, x1, y0, y1, _, z = self.vols[vol]
+        else:
+            x0, x1, y0, y1, z = self.x0, self.x1, self.y0, self.y1, self.height
         o = 0.05
         segs = (("front", x0, x1, y0, y0 + t), ("back", x0, x1, y1 - t, y1),
                 ("left", x0, x0 + t, y0 + t, y1 - t), ("right", x1 - t, x1, y0 + t, y1 - t))
         for name, a, b, c, d in segs:
             self.m.box(a, b, c, d, z, z + h, mat, skip=(BOTTOM,))
+            tag = f"parapet_{vol}_{name}" if vol else "parapet_" + name
             if name in ("front", "back"):
                 self.m.box(a - o, b + o, c - o, d + o, z + h, z + h + 0.08, cap)
-                self.roof_reserve("parapet_" + name, a - o, b + o, c - o, d + o, z, z + h + 0.08)
+                self.roof_reserve(tag, a - o, b + o, c - o, d + o, z, z + h + 0.08)
             else:
                 self.m.box(a - o, b + o, c + o, d - o, z + h, z + h + 0.08, cap)
-                self.roof_reserve("parapet_" + name, a - o, b + o, c + o, d - o, z, z + h + 0.08)
+                self.roof_reserve(tag, a - o, b + o, c + o, d - o, z, z + h + 0.08)
         self.parapet_t = t + o
 
     # -- 옥상 설비 ------------------------------------------------------------
@@ -1299,3 +1323,10 @@ DESIGNS = {
     "IlsanChicken01": chicken01,
     "IlsanToilet01": toilet01,
 }
+
+# 사진 속 건물 · 광장 시설 (landmarks.py, plaza.py) — 이 모듈의 Building · 도우미를 쓰므로 맨 끝에서 등록
+import landmarks  # noqa: E402
+import plaza  # noqa: E402
+
+DESIGNS.update(landmarks.DESIGNS)
+DESIGNS.update(plaza.DESIGNS)

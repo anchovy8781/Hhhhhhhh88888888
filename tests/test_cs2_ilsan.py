@@ -81,16 +81,34 @@ class HeightTest(unittest.TestCase):
         self.assertTrue(np.allclose(out[:, 5], out[0, 5]))
 
 
+class StreamTest(unittest.TestCase):
+    def test_carve_stream(self):
+        h = np.full((H.RES, H.RES), 5.0, dtype=np.float32)
+        h[:, :H.RES // 2] = -3.0                                   # 서쪽 절반은 바다
+        k = H.RES / H.PLAY_SIZE
+        H.carve_stream(h, [(-50.0, 0.0), (200.0, 0.0)])
+        r = int(H.RES / 2 - 0.5)
+        col = lambda x: int(x * k + H.RES / 2)                     # noqa: E731
+        self.assertAlmostEqual(float(h[r, col(100.0)]), 5.0 - H.STREAM_DEPTH, delta=0.05)   # 물길 가운데
+        self.assertEqual(float(h[r + int(30 * k), col(100.0)]), 5.0)                          # 30 m 옆은 그대로
+        self.assertEqual(float(h[r, col(-30.0)]), -3.0)                                       # 바다는 그대로
+        self.assertEqual(float(h[r, col(260.0)]), 5.0)                                        # 상류 끝 너머는 그대로
+
+
 class PlacementTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         dem = T.prepare(T.Dem.load(), 3)
         cls.dem = dem
         cls.st = S.Street(dem)
+        cls.lay = P.Layout(cls.st)
         _, alleys = S.lay_lots(cls.st.length)
-        cls.land = P.plan(cls.st, alleys)
-        cls.sea = P.plan_seaside(cls.st)
-        cls.items = cls.land + cls.sea
+        lots = P.plan(cls.st, alleys, layout=cls.lay)
+        cls.land = [it for it in lots if it["side"] == "land"]
+        cls.plaza = [it for it in lots if it["side"] == "plaza"]
+        cls.sea = P.plan_seaside(cls.st, cls.lay)
+        cls.items = lots + cls.sea
+        cls.props = P.plan_props(cls.st, cls.items, cls.lay)
 
     def test_lots_are_cell_sized_rectangles(self):
         for it in self.items:
@@ -114,16 +132,46 @@ class PlacementTest(unittest.TestCase):
             if it["side"] == "land":
                 self.assertLess(d_f[0], d_b[0])             # 뒤가 육지 쪽
                 self.assertAlmostEqual(d_f[0], P.ROAD_CENTER + P.ROAD_HALF, delta=1.0)
-            else:
+            elif it["side"] == "sea":
                 self.assertGreater(d_f[0], d_b[0])          # 뒤가 바다 쪽, 정면은 도로
                 self.assertAlmostEqual(d_f[0], P.ROAD_CENTER - P.ROAD_HALF, delta=1.0)
+            elif it["side"] == "beach":
+                self.assertGreater(d_f[0], d_b[0])          # 백사장 위, 정면은 육지 쪽
+                self.assertLess(d_f[0], S.SAND_END)
+                continue
+            else:                                           # 광장 구간 · 광장 옆 상가
+                (lf, af), (lb, ab) = self.lay.lateral(front_mid), self.lay.lateral(back_mid)
+                if it["asset"].startswith("IlsanPlaza"):
+                    self.assertLess(af, ab)                 # 바다 쪽이 정면
+                    self.assertAlmostEqual(lf, 0.0, delta=0.01)
+                else:
+                    self.assertAlmostEqual(abs(lf), P.PLAZA_HALF, delta=0.01)   # 정면이 광장 가장자리
+                    self.assertGreater(abs(lb), abs(lf))
             lat, lon = S.Street.latlon(self.dem, *back_mid)
             self.assertGreater(self.dem.sample(lat, lon), 0)
 
     def test_mix_of_assets(self):
-        self.assertEqual({it["asset"] for it in self.items}, set(catalog.ASSETS))
+        self.assertEqual({it["asset"] for it in self.items + self.props}, set(catalog.ASSETS))
         seq = [it["asset"] for it in self.land]
         self.assertEqual(sum(a == b for a, b in zip(seq, seq[1:])), 0)   # 같은 건물이 나란히 서지 않음
+
+    def test_plaza_and_stream_are_kept_clear(self):
+        lots = [it["corners"] for it in self.land + self.sea if it["asset"] != "IlsanStreamBridge"]
+        for c in lots:
+            self.assertFalse(P.overlaps(c, self.lay.stream_poly))
+        segs = [it for it in self.plaza if it["asset"].startswith("IlsanPlaza")]
+        self.assertEqual(len(segs), 4)
+        towers = {it["asset"]: self.lay.lateral(it["center"])[0] for it in self.land if "Corner" in it["asset"]}
+        self.assertGreater(towers["IlsanCornerTower01"], P.PLAZA_HALF)       # 01 = 광장 북쪽(광장이 왼쪽)
+        self.assertLess(towers["IlsanCornerTower02"], -P.PLAZA_HALF)
+
+    def test_props_stay_off_lots(self):
+        lots = [it["corners"] for it in self.items]
+        for pr in self.props:
+            if pr["asset"] in ("IlsanPine01", "IlsanPine02", "IlsanBeachRail"):
+                self.assertFalse(any(P.near(c, pr["center"], 0.5) for c in lots), pr["asset"])
+        kinds = {pr["asset"] for pr in self.props}
+        self.assertTrue({"IlsanPine01", "IlsanBeachRail", "IlsanRoundabout", "IlsanRoadMarking01"} <= kinds)
 
 
 if __name__ == "__main__":

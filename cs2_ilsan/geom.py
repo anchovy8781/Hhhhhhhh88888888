@@ -85,6 +85,13 @@ class Mesh:
             faces = [tuple(reversed(f)) for f in faces]
         self.add(verts, [f for i, f in enumerate(faces) if i not in skip], mat)
 
+    def merge(self, other, fn=None):
+        """다른 Mesh 를 그대로 덧붙인다. fn(v) -> v 로 점을 옮길 수 있다 (면 방향이 바뀌지 않는 변환만)"""
+        o = len(self.verts)
+        self.verts += [tuple(fn(v)) if fn else v for v in other.verts]
+        self.faces += [tuple(i + o for i in f) for f in other.faces]
+        self.mats += [self._mi(other.mat_names[k]) for k in other.mats]
+
     def quad(self, a, b, c, d, mat):
         self.add([a, b, c, d], [(0, 1, 2, 3)], mat)
 
@@ -143,6 +150,67 @@ class Mesh:
             for s, t in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
                 v.append(tuple(p[i] + side[i] * s * w / 2 + upn[i] * t * h / 2 for i in range(3)))
         self.add_solid(v, BOX_FACES, mat)
+
+    def tube(self, p0, p1, r0, r1, mat, n=8, cap=True):
+        """p0 -> p1 의 원뿔대 (나무 줄기 · 가지 · 깃대). r0, r1 = 양 끝 반지름"""
+        ax = [b - a for a, b in zip(p0, p1)]
+        length = math.sqrt(sum(c * c for c in ax))
+        if length < 1e-6:
+            return
+        ax = [c / length for c in ax]
+        ref = (0.0, 0.0, 1.0) if abs(ax[2]) < 0.95 else (1.0, 0.0, 0.0)
+        e1 = _norm(_cross(ax, ref))
+        e2 = _cross(ax, e1)
+        v = []
+        for p, r in ((p0, r0), (p1, r1)):
+            for i in range(n):
+                a = 2 * math.pi * i / n
+                v.append(tuple(p[k] + r * (math.cos(a) * e1[k] + math.sin(a) * e2[k]) for k in range(3)))
+        f = [(i, (i + 1) % n, n + (i + 1) % n, n + i) for i in range(n)]
+        self.add_solid(v, f + [tuple(reversed(range(n))), tuple(range(n, 2 * n))], mat,
+                       skip=() if cap else (n, n + 1))
+
+    def extrude(self, pts, offset, mat):
+        """평면 다각형 pts(3D 점, 순서대로)를 offset 벡터만큼 밀어낸 닫힌 기둥 (깃발 · 표지판 · 조형물)"""
+        n = len(pts)
+        v = [tuple(p) for p in pts] + [tuple(a + o for a, o in zip(p, offset)) for p in pts]
+        f = [(i, (i + 1) % n, n + (i + 1) % n, n + i) for i in range(n)]
+        self.add_solid(v, f + [tuple(reversed(range(n))), tuple(range(n, 2 * n))], mat)
+
+    def annulus(self, cx, cy, r0, r1, z0, z1, mat, n=40):
+        """닫힌 고리 (회전교차로 띠 · 연석 · 나무 보호대)"""
+        v = []
+        for z in (z0, z1):
+            for r in (r0, r1):
+                v += [(cx + r * math.cos(2 * math.pi * i / n), cy + r * math.sin(2 * math.pi * i / n), z)
+                      for i in range(n)]
+        bi, bo, ti, to = 0, n, 2 * n, 3 * n
+        f = []
+        for i in range(n):
+            j = (i + 1) % n
+            f += [(ti + i, to + i, to + j, ti + j), (bi + i, bi + j, bo + j, bo + i),
+                  (bo + i, bo + j, to + j, to + i), (bi + i, ti + i, ti + j, bi + j)]
+        self.add_solid(v, f, mat)
+
+    def heightfield(self, x0, x1, y0, y1, nx, ny, fn, thickness, mat):
+        """윗면이 z = fn(x, y) 인 두께 있는 곡면 판 (막 구조 천막 · 아치 다리 상판)"""
+        xs = [x0 + (x1 - x0) * i / nx for i in range(nx + 1)]
+        ys = [y0 + (y1 - y0) * j / ny for j in range(ny + 1)]
+        top = [(x, y, fn(x, y)) for y in ys for x in xs]
+        v = top + [(x, y, z - thickness) for x, y, z in top]
+        k = len(top)
+        idx = lambda i, j: j * (nx + 1) + i  # noqa: E731
+        f = []
+        for j in range(ny):
+            for i in range(nx):
+                a, b, c, d = idx(i, j), idx(i + 1, j), idx(i + 1, j + 1), idx(i, j + 1)
+                f.append((a, b, c, d))
+                f.append((k + d, k + c, k + b, k + a))
+        ring = ([idx(i, 0) for i in range(nx)] + [idx(nx, j) for j in range(ny)] +
+                [idx(i, ny) for i in range(nx, 0, -1)] + [idx(0, j) for j in range(ny, 0, -1)])
+        for a, b in zip(ring, ring[1:] + ring[:1]):
+            f.append((b, a, k + a, k + b))
+        self.add_solid(v, f, mat)
 
     def ellipsoid(self, cx, cy, cz, rx, ry, rz, mat, nu=16, nv=8):
         rings = [-math.pi / 2 + math.pi * j / nv for j in range(1, nv)]
@@ -240,6 +308,29 @@ def box_conflicts(boxes):
             if boxes[i].overlaps(boxes[j])]
 
 
+def rects_minus(x0, x1, y0, y1, holes):
+    """사각형 (x0..x1, y0..y1) 에서 구멍 사각형들을 뺀 나머지를 사각형 목록으로 (옥상 · 데크 바닥)"""
+    xs = sorted({x0, x1} | {c for h in holes for c in (h[0], h[1]) if x0 < c < x1})
+    ys = sorted({y0, y1} | {c for h in holes for c in (h[2], h[3]) if y0 < c < y1})
+    out = []
+    for ya, yb in zip(ys[:-1], ys[1:]):
+        row = None
+        for xa, xb in zip(xs[:-1], xs[1:]):
+            mx, my = (xa + xb) / 2, (ya + yb) / 2
+            hit = any(h[0] < mx < h[1] and h[2] < my < h[3] for h in holes)
+            if hit:
+                if row:
+                    out.append(tuple(row))
+                row = None
+            elif row:
+                row[1] = xb
+            else:
+                row = [xa, xb, ya, yb]
+        if row:
+            out.append(tuple(row))
+    return out
+
+
 def subtract(intervals, blocks):
     """구간 목록에서 막힌 구간들을 뺀다"""
     out = list(intervals)
@@ -267,11 +358,14 @@ class Facade:
     side: 'front'(-Y 면), 'back'(+Y), 'left'(-X), 'right'(+X).  r × z = n 이 되도록 잡혀 있어
     (u0,z0)→(u1,z0)→(u1,z1)→(u0,z1) 순서의 사각형은 항상 바깥(n)을 향한다.
     slots: 건물 전체가 공유하는 예약 목록.
+    key: 예약을 구분하는 면 이름 (기본 = side). 한 건물에 몸체가 여럿이면(저층부 + 탑) 'tower:front' 처럼
+         몸체마다 다른 key 를 써서 서로 다른 평면의 요소끼리 비교하지 않게 한다.
     """
 
-    def __init__(self, mesh, side, x0, x1, y0, y1, slots=None):
+    def __init__(self, mesh, side, x0, x1, y0, y1, slots=None, key=None):
         self.m = mesh
         self.side = side
+        self.key = key or side
         self.slots = slots if slots is not None else []
         if side == "front":
             self.o, self.r, self.n, self.width = (x0, y0), (1, 0), (0, -1), x1 - x0
@@ -324,12 +418,12 @@ class Facade:
     # -- 예약 --------------------------------------------------------------
 
     def reserve(self, kind, u0, u1, z0, z1, d0=0.0, d1=0.0, name="", recess=0.0, hole=None):
-        s = Slot(self.side, kind, u0, u1, z0, z1, d0, d1, name, recess, hole)
+        s = Slot(self.key, kind, u0, u1, z0, z1, d0, d1, name, recess, hole)
         self.slots.append(s)
         return s
 
     def fits(self, kind, u0, u1, z0, z1, d0=0.0, d1=0.0, margin=0.0):
-        probe = Slot(self.side, kind, u0, u1, z0, z1, d0, d1)
+        probe = Slot(self.key, kind, u0, u1, z0, z1, d0, d1)
         if probe.u0 < -margin - EPS or probe.u1 > self.width + margin + EPS:
             return False
         return not any(clash(probe, s) for s in self.slots)
@@ -337,25 +431,28 @@ class Facade:
     def hole(self, u0, u1, z0, z1, recess, name, d_out=0.06):
         """벽에 구멍을 낼 개구부 예약. 겹치면 ValueError (설계 오류)"""
         if u0 < 0.12 or u1 > self.width - 0.12:
-            raise ValueError(f"{self.side}:{name}: 벽 모서리에 너무 가깝습니다 (u {u0:.2f}-{u1:.2f})")
+            raise ValueError(f"{self.key}:{name}: 벽 모서리에 너무 가깝습니다 (u {u0:.2f}-{u1:.2f})")
         if not self.fits(OPENING, u0, u1, z0, z1, -recess, d_out):
-            hits = [s for s in self.slots if clash(Slot(self.side, OPENING, u0, u1, z0, z1, -recess, d_out), s)]
-            raise ValueError(f"{self.side}:{name}: 다른 요소와 겹칩니다 {hits}")
+            hits = [s for s in self.slots if clash(Slot(self.key, OPENING, u0, u1, z0, z1, -recess, d_out), s)]
+            raise ValueError(f"{self.key}:{name}: 다른 요소와 겹칩니다 {hits}")
         return self.reserve(OPENING, u0, u1, z0, z1, -recess, d_out, name, recess)
 
     # -- 벽면 생성 ----------------------------------------------------------
 
     def walls(self, zones, reveal="reveal", back="opening"):
-        """zones = [(z0, z1, 재질)] 높이 구간마다 벽을 만들되, 개구부 자리는 비우고
-        개구부마다 안쪽 면(양옆 · 위 · 아래)과 안쪽 끝면을 만든다."""
+        """zones = [(z0, z1, 재질)] 또는 [(z0, z1, 재질, u0, u1)] 높이(· 가로) 구간마다 벽을 만들되,
+        개구부 자리는 비우고 개구부마다 안쪽 면(양옆 · 위 · 아래)과 안쪽 끝면을 만든다.
+        u 범위를 주면 그 밖은 비운다 (다른 몸체에 가려지는 부분)."""
         holes = [(s.hole or (s.u0, s.u1, s.z0, s.z1), s.recess)
-                 for s in self.slots if s.side == self.side and s.recess > 0]
-        for za, zb, mat in zones:
+                 for s in self.slots if s.side == self.key and s.recess > 0]
+        for zone in zones:
+            za, zb, mat = zone[:3]
+            span = (zone[3], zone[4]) if len(zone) > 3 else (0.0, self.width)
             zs = sorted({za, zb} | {z for (h, _) in holes for z in (h[2], h[3]) if za + EPS < z < zb - EPS})
             merged = []
             for z0, z1 in zip(zs[:-1], zs[1:]):
                 blocks = sorted((h[0], h[1]) for (h, _) in holes if h[2] <= z0 + EPS and h[3] >= z1 - EPS)
-                free = subtract([(0.0, self.width)], blocks)
+                free = subtract([span], blocks)
                 if merged and merged[-1][2] == free:
                     merged[-1][1] = z1
                 else:
@@ -430,6 +527,41 @@ class Facade:
                 self.box(gu - 0.01, gu + 0.01, z + 0.06, z1 - 0.04, gd0, gd1, "grille", attached=False)
         return True
 
+    def curtain(self, u0, u1, z0, z1, floor_h, bay, recess=0.12, spandrel=0.0, fins=0.0, fin_every=1,
+                ledge=0.0, lit=0.3, rng=None, glass="glass_curtain", lit_glass="glass_curtain_lit",
+                spandrel_mat="spandrel", frame="frame", fin_mat="fin", name="curtain"):
+        """커튼월: 벽을 뚫은 개구부 하나 안에 층마다 스팬드럴(불투명 띠) + 유리, 세로 멀리언, 층 가로대.
+        fins > 0 이면 멀리언 자리마다(fin_every 칸마다) 밖으로 튀어나온 세로 핀, ledge > 0 이면 층마다 가로 차양.
+        핀 · 차양은 개구부 예약 깊이에 포함되므로 다른 요소와 겹치지 않는다. 유리는 칸마다 켜짐(lit)이 다르다."""
+        d_out = max(fins, ledge, 0.06)
+        self.hole(u0, u1, z0, z1, recess, name, d_out=d_out)
+        b = -recess
+        nb = max(1, int(round((u1 - u0) / bay)))
+        nf = max(1, int(round((z1 - z0) / floor_h)))
+        bw, fh = (u1 - u0) / nb, (z1 - z0) / nf
+        for j in range(nf):
+            za, zb = z0 + j * fh, z0 + (j + 1) * fh
+            if spandrel > 0:
+                self.quad(u0, u1, za, za + spandrel, b + 0.03, spandrel_mat)
+            for i in range(nb):
+                g = lit_glass if (rng is not None and rng.random() < lit) else glass
+                self.quad(u0 + i * bw, u0 + (i + 1) * bw, za + spandrel, zb, b + 0.02, g)
+        for i in range(nb + 1):
+            uu = min(max(u0 + i * bw, u0 + 0.035), u1 - 0.035)
+            self.box(uu - 0.035, uu + 0.035, z0, z1, b, b + 0.11, frame)
+        for j in range(nf + 1):
+            zz = min(max(z0 + j * fh, z0 + 0.04), z1 - 0.04)
+            self.box(u0, u1, zz - 0.04, zz + 0.04, b, b + 0.10, frame)
+        if fins > 0:
+            for i in range(0, nb + 1, fin_every):
+                uu = min(max(u0 + i * bw, u0 + 0.07), u1 - 0.07)
+                self.box(uu - 0.06, uu + 0.06, z0, z1, b + 0.11, fins, fin_mat)
+        if ledge > 0:
+            for j in range(1, nf + 1):
+                zz = z0 + j * fh
+                self.box(u0, u1, zz - 0.14, min(zz + 0.08, z1), b + 0.10, ledge, fin_mat)
+        return nb, nf
+
     def glass_text(self, letters, u, z, recess=0.15):
         """창 유리에 붙인 시트 글자 (예약 없음 — 창 안쪽)"""
         self.text(letters, u, z, -recess + 0.1, "letters_glass", kind=None)
@@ -451,7 +583,7 @@ class Facade:
             self.box(hu - 0.02, hu + 0.02, z0 + 0.85, z0 + 1.45, d + 0.06, d + 0.12, "metal", attached=False)
 
     def storefront(self, u0, u1, z0, z1, bay=1.25, transom=2.55, doors=(), recess=0.25, kick=0.35,
-                   name="storefront"):
+                   name="storefront", mat_depth=1.1):
         """1층 상점: 벽을 뚫고 25 cm 들어간 유리면. 멀리언은 문 양옆 문틀 사이 구간마다 따로 나눠
         문을 가로지르지 않는다. 문 높이 = transom, 문 위는 가로대와 欄間 유리. doors: [(중심 u, 폭)]"""
         self.hole(u0, u1, z0, z1, recess, name)
@@ -487,8 +619,8 @@ class Facade:
             self.box(a, a + jamb, z0, zt, b, b + 0.13, "frame")
             self.box(c - jamb, c, z0, zt, b, b + 0.13, "frame")
             self._leaves(du, dw, z0 + 0.02, zt, "glass_door", b + 0.04)
-            self.box(du - dw / 2, du + dw / 2, 0.03, 0.05, 0.05, 1.1, "rubber", attached=False)
-            self.reserve(FOREGROUND, du - dw / 2, du + dw / 2, 0.03, 0.05, 0.05, 1.1, name + "_mat")
+            self.box(du - dw / 2, du + dw / 2, 0.03, 0.05, 0.05, mat_depth, "rubber", attached=False)
+            self.reserve(FOREGROUND, du - dw / 2, du + dw / 2, 0.03, 0.05, 0.05, mat_depth, name + "_mat")
         # 가로대 위 欄間 유리 (문 위까지 전체 폭) + 상부 틀
         self.box(u0, u1, zt, zt + 0.08, b, b + 0.12, "frame")
         self.box(u0, u1, zt + 0.08, z1 - 0.10, b, b + 0.03, "glass_shop")
@@ -563,7 +695,7 @@ class Facade:
         b = self.width + out if u_to is None else u_to
         blocks = []
         for s in self.slots:
-            if s.side != self.side or s.kind not in (OPENING, SIGN, FIXTURE, FOREGROUND):
+            if s.side != self.key or s.kind not in (OPENING, SIGN, FIXTURE, FOREGROUND):
                 continue
             if s.z0 >= z1 - EPS or s.z1 <= z0 + EPS:
                 continue

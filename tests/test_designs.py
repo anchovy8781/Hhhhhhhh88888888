@@ -31,7 +31,7 @@ class DesignTest(unittest.TestCase):
     def test_openings_are_cut_into_walls(self):
         for name, (b, _) in self.built.items():
             holes = [s for s in b.slots if s.kind == G.OPENING and s.recess > 0]
-            if name != "IlsanGrill01":                       # 조개구이는 벽 없는 천막 구조
+            if b.zones:                                      # 벽 있는 건물 (천막 · 광장 · 소품 제외)
                 self.assertGreater(len(holes), 4, name)
             self.assertIn("reveal", b.m.mat_names if holes else ["reveal"], name)
 
@@ -44,18 +44,24 @@ class DesignTest(unittest.TestCase):
     def test_walls_face_outward_and_roofs_up(self):
         """CS2 는 뒷면을 그리지 않는다: 바깥벽은 건물 밖을, 지붕면은 위를 향해야 한다"""
         for name, (b, _) in self.built.items():
-            wall_mats = {m for zones in b.zones.values() for (_, _, m) in zones}
-            cx, cy = (b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2
+            wall_mats = {z[2] for zones in b.zones.values() for z in zones}
+            vols = [(b.x0, b.x1, b.y0, b.y1, 0.0, b.height)] + list(b.vols.values())
             checked = 0
             for fi, f in enumerate(b.m.faces):
                 mat = b.m.mat_names[b.m.mats[fi]]
                 n = G.face_normal(b.m.verts, f)
                 c = [sum(b.m.verts[i][k] for i in f) / len(f) for k in range(3)]
-                on_shell = (abs(c[0] - b.x0) < 1e-6 or abs(c[0] - b.x1) < 1e-6 or
-                            abs(c[1] - b.y0) < 1e-6 or abs(c[1] - b.y1) < 1e-6)
-                if mat in wall_mats and on_shell and abs(n[2]) < 1e-9 and c[2] < b.height:
-                    self.assertGreater(n[0] * (c[0] - cx) + n[1] * (c[1] - cy), 0, (name, mat, c))
-                    checked += 1
+                if mat not in wall_mats or abs(n[2]) > 1e-9:
+                    continue
+                for x0, x1, y0, y1, z0, z1 in vols:          # 그 면이 놓인 몸체의 중심에서 바깥을 향해야 한다
+                    inside = x0 - 1e-6 <= c[0] <= x1 + 1e-6 and y0 - 1e-6 <= c[1] <= y1 + 1e-6 and z0 <= c[2] < z1
+                    on_shell = (abs(c[0] - x0) < 1e-6 or abs(c[0] - x1) < 1e-6 or
+                                abs(c[1] - y0) < 1e-6 or abs(c[1] - y1) < 1e-6)
+                    if inside and on_shell:
+                        cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+                        self.assertGreater(n[0] * (c[0] - cx) + n[1] * (c[1] - cy), 0, (name, mat, c))
+                        checked += 1
+                        break
                 if mat == "roof":
                     self.assertGreater(n[2], 0, (name, c))
             if b.zones:
@@ -63,9 +69,29 @@ class DesignTest(unittest.TestCase):
 
     def test_variety(self):
         kinds = {v[2] for v in catalog.ASSETS.values()}
-        self.assertGreaterEqual(len(kinds), 12)
-        heights = sorted(round(b.top) for b, _ in self.built.values())
-        self.assertGreater(heights[-1] - heights[0], 15)     # 단층 천막부터 7층 호텔까지
+        self.assertGreaterEqual(len(kinds), 20)
+        heights = sorted(round(b.top) for name, (b, _) in self.built.items() if catalog.TYPE[name] == "building")
+        self.assertGreater(heights[-1] - heights[0], 60)     # 단층 천막부터 19층 호텔까지
+
+    def test_multi_volume_hotel(self):
+        b, _ = self.built["IlsanTanibayHotel"]
+        self.assertEqual(set(b.vols), {"tower", "core"})
+        self.assertGreater(b.top, 70)
+        keys = {s.side for s in b.slots}
+        self.assertTrue({"front", "tower:front", "tower:left", "core:back"} <= keys)
+        rooms = [s for s in b.slots if s.name == "rooms"]
+        self.assertEqual(len(rooms), 1)
+        self.assertGreater(rooms[0].d1, 0.5)                  # 세로 핀이 개구부 예약 깊이에 포함
+
+    def test_curtain_wall_has_no_conflicts_with_signs(self):
+        """모퉁이 상가: 층마다 간판 띠와 유리가 번갈아 놓이고 서로 겹치지 않는다"""
+        for name in ("IlsanCornerTower01", "IlsanCornerTower02"):
+            b, _ = self.built[name]
+            signs = [s for s in b.slots if s.kind == G.SIGN and s.name.startswith("sign:")]
+            glass = [s for s in b.slots if s.kind == G.OPENING and s.name.startswith("cw_")]
+            self.assertGreaterEqual(len(signs), 12, name)
+            self.assertEqual(len(glass), 12, name)
+            self.assertEqual(G.conflicts(signs + glass), [], name)
 
 
 if __name__ == "__main__":

@@ -6,9 +6,11 @@
 출력
   Ilsan_Heightmap.png   4096x4096 16-bit, 14.336 km (3.5 m/px)  - 플레이 영역
   Ilsan_Worldmap.png    4096x4096 16-bit, 57.344 km (14 m/px)   - 바깥 경관, 가운데 1024 px = 플레이 영역
-  Ilsan_Overlay.png     4096x4096 RGBA  - 해안선 · 도로 중심선 · 에셋 부지 참고 이미지
-  Ilsan_Placement.json  에셋별 게임 좌표 · 회전 · 지면 높이
-  Ilsan_Map.json        해수면 · 높이 배율 · 게임 좌표의 거리 위치
+  Ilsan_Overlay.png     4096x4096 RGBA  - 해안선 · 도로 중심선 · 에셋 부지 · 하천 · 해송 · 난간 참고 이미지
+  Ilsan_Placement.json  에셋별 게임 좌표 · 회전 · 지면 높이 (부지 + 소품)
+  Ilsan_Map.json        해수면 · 높이 배율 · 게임 좌표의 거리 위치 · 광장 · 하천 · 회전교차로
+
+광장 남쪽 하천은 하이트맵에 폭 8 m · 깊이 1.8 m 물길로 파 둔다 (하구는 해수면 아래라 게임에서 바닷물이 들어온다).
 
 CS2 하이트맵 규격(4096², 16-bit, 플레이 14.336 km, 월드 57.344 km, 높이 배율 4096 m)은
 Terraining Heightmap Generator 의 CS2 설정과 Colossal Order 맵 에디터 개발 일지 기준이다.
@@ -155,8 +157,36 @@ def ground_sampler(play):
     return ground
 
 
-def draw_overlay(h, st, dem, lat0, lon0, items):
-    """해안선(청록) · 도로 중심선(노랑) · 에셋 부지(종류별 색 윤곽, 앞선은 흰색)를 그린 참고 이미지"""
+STREAM_DEPTH = 1.8      # 하천 물길 깊이 (m)
+STREAM_BED = 4.0        # 물길 바닥 반폭 (m)
+STREAM_BANK = 8.0       # 둑 경사 폭 (m)
+
+
+def carve_stream(h, line_xz):
+    """하이트맵(행 0 = 북)에 하천 물길을 판다. line_xz = 게임 좌표 (하구, 상류 끝). 바다(0 m 이하)는 그대로."""
+    (x0, z0), (x1, z1) = line_xz
+    k = RES / PLAY_SIZE
+    pad = int((STREAM_BED + STREAM_BANK) * k) + 2
+    c0 = int(min(x0, x1) * k + RES / 2) - pad
+    c1 = int(max(x0, x1) * k + RES / 2) + pad
+    r0 = int(RES / 2 - max(z0, z1) * k) - pad
+    r1 = int(RES / 2 - min(z0, z1) * k) + pad
+    rr, cc = np.mgrid[r0:r1 + 1, c0:c1 + 1]
+    gx = (cc + 0.5 - RES / 2) / k
+    gz = (RES / 2 - rr - 0.5) / k
+    ax, az = x1 - x0, z1 - z0
+    t = np.clip(((gx - x0) * ax + (gz - z0) * az) / (ax * ax + az * az), 0, 1)
+    d = np.hypot(gx - (x0 + t * ax), gz - (z0 + t * az))
+    w = np.clip(1 - (d - STREAM_BED) / STREAM_BANK, 0, 1)
+    w = w * w * (3 - 2 * w)
+    sub = h[r0:r1 + 1, c0:c1 + 1]
+    h[r0:r1 + 1, c0:c1 + 1] = np.where(sub > 0, sub - STREAM_DEPTH * w, sub)
+    return h
+
+
+def draw_overlay(h, st, dem, lat0, lon0, items, extras=None):
+    """해안선(청록) · 도로 중심선(노랑) · 에셋 부지(종류별 색 윤곽, 앞선은 흰색) · 하천(파랑) ·
+    해송(초록 점) · 난간(진회색 선) · 회전교차로(빨강 원)를 그린 참고 이미지"""
     rgba = np.zeros((RES, RES, 4), dtype=np.uint8)
     sea = h <= 0
     edge = sea & ~(np.roll(sea, 1, 0) & np.roll(sea, -1, 0) & np.roll(sea, 1, 1) & np.roll(sea, -1, 1))
@@ -177,7 +207,14 @@ def draw_overlay(h, st, dem, lat0, lon0, items):
     colors = {"횟집": (255, 80, 60, 255), "대게": (255, 40, 120, 255), "조개구이": (255, 170, 0, 255),
               "카페": (170, 110, 60, 255), "치킨": (255, 230, 60, 255), "상가": (80, 200, 90, 255),
               "근린상가": (60, 160, 255, 255), "시장": (40, 90, 255, 255), "숙박": (200, 80, 220, 255),
-              "펜션": (150, 220, 255, 255), "주거": (200, 200, 200, 255), "화장실": (0, 255, 160, 255)}
+              "펜션": (150, 220, 255, 255), "주거": (200, 200, 200, 255), "화장실": (0, 255, 160, 255),
+              "호텔": (255, 120, 255, 255), "상업빌딩": (0, 220, 255, 255), "청년공간": (255, 140, 0, 255),
+              "광장": (230, 230, 230, 255), "조형물": (255, 255, 255, 255), "다리": (120, 160, 255, 255)}
+    extras = extras or {}
+    if "stream_xz" in extras:
+        a, b = (to_px(*p) for p in extras["stream_xz"])
+        for o in (-1, 0, 1):
+            line((a[0] + o, a[1]), (b[0] + o, b[1]), (40, 120, 255, 255))
     prev = None
     for s in np.arange(0, st.length, 1.0):
         (x, y), _, _ = st.frame(s, placement.ROAD_CENTER)
@@ -187,25 +224,59 @@ def draw_overlay(h, st, dem, lat0, lon0, items):
         prev = p
     for it in items:
         c = [to_px(*xz) for xz in it["corners_game_xz"]]
-        col = colors.get(catalog.ASSETS[it["asset"]][2], (255, 255, 255, 255))
-        line(c[0], c[1], (255, 255, 255, 255))
-        for i in (1, 2, 3):
-            line(c[i], c[(i + 1) % 4], col)
+        name = it["asset"]
+        if name in ("IlsanPine01", "IlsanPine02"):
+            x, y = (int(round(q)) for q in to_px(it["game_x"], it["game_z"]))
+            rgba[y - 1:y + 2, x - 1:x + 2] = (40, 200, 60, 255)
+        elif name == "IlsanBeachRail":
+            line(((c[0][0] + c[3][0]) / 2, (c[0][1] + c[3][1]) / 2), ((c[1][0] + c[2][0]) / 2,
+                 (c[1][1] + c[2][1]) / 2), (60, 60, 60, 255))
+        elif name == "IlsanRoadMarking01":
+            x, y = (int(round(q)) for q in to_px(it["game_x"], it["game_z"]))
+            rgba[y - 1:y + 2, x - 1:x + 2] = (255, 200, 0, 255)
+        elif name == "IlsanRoundabout":
+            cx, cy = to_px(it["game_x"], it["game_z"])
+            r = 7.6 * px_per_m
+            pts = [(cx + r * math.cos(a), cy + r * math.sin(a)) for a in np.linspace(0, 2 * math.pi, 25)]
+            for p, q in zip(pts, pts[1:]):
+                line(p, q, (255, 40, 40, 255))
+        else:
+            col = colors.get(catalog.ASSETS[name][2], (255, 255, 255, 255))
+            line(c[0], c[1], (255, 255, 255, 255))
+            for i in (1, 2, 3):
+                line(c[i], c[(i + 1) % 4], col)
     return rgba
+
+
+SIDE_NAMES = {"land": "해변 도로 상가 줄", "plaza": "청년광장", "sea": "도로 바다 쪽", "beach": "백사장",
+              "center": "도로 위", "prop": "소품"}
 
 
 def write_placement_md(path, items):
     lines = ["# 일산지 거리 에셋 배치표", "",
-             "게임 좌표: 맵 중심 원점, x = 동쪽, z = 북쪽 (m). 회전 = 건물 정면(도로 쪽)이 향하는 방위, "
+             "게임 좌표: 맵 중심 원점, x = 동쪽, z = 북쪽 (m). 회전 = 에셋 정면(-Y)이 향하는 방위, "
              "북쪽 0° 에서 시계 방향. 지면 = 게임 높이 (해수면 40 m).", "",
-             "| # | 쪽 | 에셋 | 간판 | 부지(셀) | x | z | 회전 | 지면 |", "|---|---|---|---|---|---|---|---|---|"]
-    for i, it in enumerate(items, 1):
+             "## 부지 (건물 · 광장 · 해변 시설)", "",
+             "| # | 위치 | 에셋 | 이름 | 부지(셀) | x | z | 회전 | 지면 |", "|---|---|---|---|---|---|---|---|---|"]
+    lots = [it for it in items if it["side"] not in ("prop", "center")]
+    props = [it for it in items if it["side"] in ("prop", "center")]
+    for i, it in enumerate(lots, 1):
         cw, cd, kind, title = catalog.ASSETS[it["asset"]][:4]
-        side = "상가 줄" if it.get("side", "land") == "land" else "백사장 쪽"
-        lines.append(f"| {i} | {side} | `{it['asset']}` | {title} | {cw}×{cd} | {it['game_x']:.1f} "
+        lines.append(f"| {i} | {SIDE_NAMES[it['side']]} | `{it['asset']}` | {title} | {cw}×{cd} | {it['game_x']:.1f} "
                      f"| {it['game_z']:.1f} | {it['rotation_deg']:.1f}° | {it['ground_m']:.1f} m |")
+    lines += ["", "## 소품 (부지 없음)", "",
+              "해송은 백사장 가장자리, 난간은 8 m 토막을 도로 바다 쪽 산책로에 이어 붙인다 (회전 = 정면이 도로 쪽).", "",
+              "| # | 에셋 | 이름 | x | z | 회전 | 지면 |", "|---|---|---|---|---|---|---|"]
+    for i, it in enumerate(props, 1):
+        title = catalog.ASSETS[it["asset"]][3]
+        lines.append(f"| {i} | `{it['asset']}` | {title} | {it['game_x']:.1f} | {it['game_z']:.1f} "
+                     f"| {it['rotation_deg']:.1f}° | {it['ground_m']:.1f} m |")
     with open(path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
+
+
+KEEP = ("asset", "side", "s_mid", "axial", "width", "depth", "game_x", "game_z", "rotation_deg", "ground_m",
+        "corners_game_xz")
 
 
 def main():
@@ -226,17 +297,22 @@ def main():
     c0 = RES * 3 // 8
     world[c0:c0 + RES // 4, c0:c0 + RES // 4] = play.reshape(RES // 4, 4, RES // 4, 4).mean((1, 3))
 
-    pngio.write_gray16(os.path.join(args.out, "Ilsan_Heightmap.png"), to_u16(play))
     pngio.write_gray16(os.path.join(args.out, "Ilsan_Worldmap.png"), to_u16(world))
 
     _, alleys = S.lay_lots(st.length)
-    items = placement.plan(st, alleys) + placement.plan_seaside(st)
-    ground = ground_sampler(play)
-    placement.to_game(items, st, dem, lambda la, lo: game_xy(la, lo, lat0, lon0), ground)
-    pngio.write_rgb8(os.path.join(args.out, "Ilsan_Overlay.png"), draw_overlay(play, st, dem, lat0, lon0, items))
+    lay = placement.Layout(st)
+    lots = placement.plan(st, alleys, layout=lay) + placement.plan_seaside(st, lay)
+    items = lots + placement.plan_props(st, lots, lay)
+    to_xz = lambda la, lo: game_xy(la, lo, lat0, lon0)  # noqa: E731
+    ground = ground_sampler(play.copy())   # 지면 높이는 하천을 파기 전 지형 (다리 · 도로는 물길 위로 지나간다)
+    placement.to_game(items, st, dem, to_xz, ground)
+    stream_xz = [to_xz(*S.Street.latlon(dem, *p)) for p in lay.stream_line]
+    carve_stream(play, stream_xz)
+    pngio.write_gray16(os.path.join(args.out, "Ilsan_Heightmap.png"), to_u16(play))
+    pngio.write_rgb8(os.path.join(args.out, "Ilsan_Overlay.png"),
+                     draw_overlay(play, st, dem, lat0, lon0, items, {"stream_xz": stream_xz}))
     with open(os.path.join(args.out, "Ilsan_Placement.json"), "w", encoding="utf-8") as f:
-        json.dump([{k: v for k, v in it.items() if k not in ("a0", "a1", "front_offset", "corners")} for it in items],
-                  f, ensure_ascii=False, indent=2)
+        json.dump([{k: v for k, v in it.items() if k in KEEP} for it in items], f, ensure_ascii=False, indent=2)
 
     write_placement_md(os.path.join(args.out, "Ilsan_Placement.md"), items)
 
@@ -254,7 +330,13 @@ def main():
         "elevation_range_m": [float(play.min()), float(play.max())],
         "street_length_m": round(st.length, 1),
         "street_centerline_game_xz": pts,
-        "note": "게임 좌표: 맵 중심 원점, x=동쪽, z=북쪽. ground_m 은 그 위치 하이트맵 지형의 게임 높이(해수면 40 m).",
+        "plaza": {"axis_start_xz": [round(c, 1) for c in to_xz(*S.Street.latlon(dem, *lay.F))],
+                  "axis_end_xz": [round(c, 1) for c in to_xz(*S.Street.latlon(dem, *(lay.F + lay.n * 128)))],
+                  "width_m": 2 * placement.PLAZA_HALF, "length_m": 128.0},
+        "roundabout_xz": [round(c, 1) for c in to_xz(*S.Street.latlon(dem, *lay.road_center))],
+        "stream_xz": [[round(c, 1) for c in p] for p in stream_xz],
+        "note": "게임 좌표: 맵 중심 원점, x=동쪽, z=북쪽. ground_m 은 그 위치 하이트맵 지형의 게임 높이(해수면 40 m). "
+                "하천(stream_xz)은 하이트맵에 물길로 파여 있고, 해변 도로는 그 위를 다리로 건넌다.",
     }
     with open(os.path.join(args.out, "Ilsan_Map.json"), "w", encoding="utf-8") as f:
         json.dump(info, f, ensure_ascii=False, indent=2)

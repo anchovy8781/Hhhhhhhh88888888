@@ -1,4 +1,4 @@
-"""일산지 거리 상가 — 시티즈: 스카이라인 2 건물 에셋 생성기 (13종).
+"""일산지 거리 — 시티즈: 스카이라인 2 에셋 생성기 (상가 · 호텔 · 광장 · 해변 시설 · 소품 28종).
 
     blender -b --python assets.py -- [옵션]
     (또는 bpy 모듈이 있는 파이썬:  python assets.py -- [옵션])
@@ -82,7 +82,8 @@ def make_asset(name, font_path, out_root, tex=None, preview_dir=None, do_bake=Tr
     specs.update(b.mats)
     obj = kit.to_object(b.m, name, specs)
     tex = tex or cat_tex
-    info = {"name": name, "title": title, "kind": kind, "lot_cells": [cw, cd], "lot_m": [b.lw, b.ld],
+    info = {"name": name, "title": title, "kind": kind, "type": catalog.TYPE[name], "lot_cells": [cw, cd],
+            "lot_m": [b.lw, b.ld],
             "footprint_m": [round(b.w, 2), round(b.d, 2)], "height_m": round(float(obj.dimensions.z), 2),
             "lod0_tris": bake.tri_count(obj), "openings": sum(1 for s in b.slots if s.kind == "opening"),
             "texture": tex}
@@ -125,9 +126,16 @@ def main():
         if args.save_blend:
             os.makedirs(os.path.abspath(args.save_blend), exist_ok=True)
             bpy.ops.wm.save_as_mainfile(filepath=os.path.join(os.path.abspath(args.save_blend), name + ".blend"))
-    if not args.no_bake and not args.only:
+    if not args.no_bake:
+        # 목록은 지금 만든 것 + 이미 만들어 둔 에셋 정보(<이름>.json)를 합쳐 다시 쓴다
+        done = {i["name"]: i for i in infos}
+        for name in designs.DESIGNS:
+            path = os.path.join(args.out, name, name + ".json")
+            if name not in done and os.path.exists(path):
+                with open(path, encoding="utf-8") as f:
+                    done[name] = json.load(f)
         with open(os.path.join(args.out, "catalog.json"), "w", encoding="utf-8") as f:
-            json.dump(infos, f, ensure_ascii=False, indent=2)
+            json.dump([done[n] for n in designs.DESIGNS if n in done], f, ensure_ascii=False, indent=2)
 
 
 if __name__ == "__main__":
