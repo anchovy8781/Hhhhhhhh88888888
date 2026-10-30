@@ -52,8 +52,33 @@ def mat(name, color, rough=0.8, metal=0.0):
     return m
 
 
-def terrain(maps, info, half=1200.0):
-    """하이트맵에서 거리 주변 (2*half m) 정사각형을 메시로"""
+def flatten(sub, xs, ys, lots, pad=3.5, blend=12.0):
+    """게임처럼 부지 아래 땅을 부지 높이로 고른다. lots = [(네 모서리 xz, 높이)].
+    부지(+pad, 격자 간격만큼) 안은 평평하게, 바깥 blend m 동안 원래 지형으로 이어진다."""
+    X, Y = np.meshgrid(xs, ys)
+    for corners, z in lots:
+        p = np.array(corners, dtype=np.float64)
+        c = p.mean(0)
+        eu, ev = p[1] - p[0], p[3] - p[0]
+        hu, hv = np.linalg.norm(eu) / 2, np.linalg.norm(ev) / 2
+        eu, ev = eu / (2 * hu), ev / (2 * hv)
+        r = hu + hv + pad + blend
+        cs = np.where(np.abs(xs - c[0]) < r)[0]
+        rs = np.where(np.abs(ys - c[1]) < r)[0]
+        if len(cs) == 0 or len(rs) == 0:
+            continue
+        win = np.s_[rs[0]:rs[-1] + 1, cs[0]:cs[-1] + 1]
+        dx, dy = X[win] - c[0], Y[win] - c[1]
+        lu = np.abs(dx * eu[0] + dy * eu[1]) - hu - pad
+        lv = np.abs(dx * ev[0] + dy * ev[1]) - hv - pad
+        d = np.hypot(np.maximum(lu, 0), np.maximum(lv, 0))
+        w = np.clip(1.0 - d / blend, 0.0, 1.0)
+        w = w * w * (3 - 2 * w)
+        sub[win] = sub[win] * (1 - w) + z * w
+
+
+def terrain(maps, info, half=1200.0, lots=()):
+    """하이트맵에서 거리 주변 (2*half m) 정사각형을 메시로 (lots 가 있으면 부지 아래를 고름)"""
     img = bpy.data.images.load(os.path.join(maps, "Ilsan_Heightmap.png"))
     img.colorspace_settings.name = 'Non-Color'
     w, h = img.size
@@ -63,10 +88,11 @@ def terrain(maps, info, half=1200.0):
     mpp = PLAY / RES
     c = int(round(half / mpp))
     r0, c0 = RES // 2 - c, RES // 2 - c
-    sub = hm[r0:r0 + 2 * c + 1, c0:c0 + 2 * c + 1]
+    sub = hm[r0:r0 + 2 * c + 1, c0:c0 + 2 * c + 1].astype(np.float64)
     rows, cols = sub.shape
     xs = (np.arange(cols) + c0 + 0.5 - RES / 2) * mpp
     ys = (RES / 2 - (np.arange(rows) + r0 + 0.5)) * mpp
+    flatten(sub, xs, ys, lots)
     X, Y = np.meshgrid(xs, ys)
     verts = np.stack([X.ravel(), Y.ravel(), sub.ravel()], 1)
     idx = np.arange(rows * cols).reshape(rows, cols)
@@ -327,7 +353,10 @@ def main():
         info = json.load(f)
     with open(os.path.join(a.maps, "Ilsan_Placement.json"), encoding="utf-8") as f:
         items = json.load(f)
-    height = terrain(a.maps, info)
+    # 건물 · 광장 부지 아래는 게임처럼 평평하게 (하천 위 보행교는 물길을 메우지 않도록 뺀다)
+    lots = [(it["corners_game_xz"], it["ground_m"] - info["sea_level_m"]) for it in items
+            if it["side"] not in ("prop", "center") and it["asset"] != "IlsanStreamBridge"]
+    height = terrain(a.maps, info, lots=lots)
     stream(info, height)
     main_road(info)
     P, n = road(info)
