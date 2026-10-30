@@ -1,0 +1,26 @@
+{
+  "name": "IlsanBBQ",
+  "title": "BBQ 치킨",
+  "kind": "치킨",
+  "type": "building",
+  "lot_cells": [
+    2,
+    2
+  ],
+  "lot_m": [
+    16.0,
+    16.0
+  ],
+  "footprint_m": [
+    12.5,
+    9.5
+  ],
+  "height_m": 9.4,
+  "lod0_tris": 24490,
+  "openings": 13,
+  "texture": 2048,
+  "lod_tris": [
+    6913,
+    1268
+  ]
+}
