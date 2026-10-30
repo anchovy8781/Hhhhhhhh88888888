@@ -1,7 +1,7 @@
 """배치 검증용 미리보기: 하이트맵 지형 + 도로 + 배치표대로 놓은 CS2 에셋(FBX)을 블렌더에 재현한다.
 
     blender -b --python preview_layout.py -- --render layout.png [--night] [--camera aerial|street]
-    blender -b --python preview_layout.py -- --photos docs/      # 사진 6장 구도 real_01~06.jpg + 브랜드 매장 brand_01~04.jpg
+    blender -b --python preview_layout.py -- --photos docs/      # 사진 6장 구도 real_01~06.jpg + 브랜드 매장 brand_01~09.jpg
 
 게임과 같은 좌표(맵 중심 원점, x 동쪽, z 북쪽 → 블렌더 x, y)와 높이(해수면 40 m → 블렌더 0 m)를 쓴다.
 도로(노란 중앙선) · 회전교차로 고리 · 하천 물길의 물도 함께 놓는다.
@@ -34,7 +34,7 @@ def args():
     p.add_argument("--render")
     p.add_argument("--night", action="store_true")
     p.add_argument("--camera", default="aerial", choices=("aerial", "street"))
-    p.add_argument("--photos", help="사진 구도 6장(real_0N.jpg) + 실제 브랜드 매장 4장(brand_0N.jpg)을 이 폴더에 렌더")
+    p.add_argument("--photos", help="사진 구도 6장(real_0N.jpg) + 실제 매장 9장(brand_0N.jpg)을 이 폴더에 렌더")
     p.add_argument("--only", help="--photos 중 일부 이름만 (예: real_01,brand_02)")
     p.add_argument("--samples", type=int, default=48)
     p.add_argument("--save")
@@ -283,7 +283,12 @@ def photo_cameras(info, items, P, n, height):
     brands = [("brand_01",) + facing("IlsanTerracePark01", 26.0, -14.0, 1.7, 5.5, 22),
               ("brand_02",) + facing("IlsanStarbucksDT", 30.0, 12.0, 3.0, 3.5, 24),
               ("brand_03",) + facing("IlsanHomeplus", 70.0, -18.0, 9.0, 8.0, 26),
-              ("brand_04",) + facing("IlsanGS25", 15.0, -6.0, 1.7, 2.5, 22)]
+              ("brand_04",) + facing("IlsanGS25", 15.0, -6.0, 1.7, 2.5, 22),
+              ("brand_05",) + facing("IlsanGasStation", 36.0, 12.0, 4.5, 3.0, 22),
+              ("brand_06",) + facing("IlsanBaskin", 20.0, -13.0, 1.7, 3.5, 22),
+              ("brand_07",) + facing("IlsanOliveDaiso", 30.0, 9.0, 1.7, 7.5, 22),
+              ("brand_08",) + facing("IlsanSikdang153", 19.0, -7.0, 1.7, 4.0, 22),
+              ("brand_09",) + facing("IlsanMGBank", 24.0, 7.0, 1.7, 5.0, 22)]
     return brands + [
         ("real_01", p3(R - ax * 15 - tp * 21, zr + 4.5), p3(tower, tz + 12), 20),
         ("real_02", p3(lane(i2), z2 + 1.5), p3(lane(i2t), z2 + 2.6), 24),

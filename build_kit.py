@@ -2,7 +2,7 @@
 
   dist/Ilsan_CS2_Kit/         게임용 키트 폴더 (CS2Assets · Heightmaps · docs · README) — 액션 아티팩트로 그대로 올린다
   dist/Ilsan_CS2_Kit.zip      위 폴더 전체 압축
-  dist/Ilsan_CS2Assets.zip    에셋 34종만 (풀어서 CS2 Asset Importer 의 Project Root 로 지정)
+  dist/Ilsan_CS2Assets.zip    에셋 43종만 (풀어서 CS2 Asset Importer 의 Project Root 로 지정)
   dist/Ilsan_Heightmaps.zip   하이트맵 · 월드맵 · 오버레이 · 배치표 · 맵 정보
   dist/cs2_asset_tools.zip    블렌더 애드온 (편집 > 환경 설정 > 애드온 > 설치)
   dist/SHA256SUMS.txt
