@@ -570,7 +570,7 @@ def hoetjip01(text_fn=None):
 
 
 # ---------------------------------------------------------------------------
-# 2. 동해회센터 — 3x3, 2층 넓은 횟집, 흰 도장벽, 수족관 6개, 2층 통창, 옥상 현수막
+# 2. 일산회센터 (실제: 해수욕장10길 60, 2007년) — 3x3, 2층 넓은 횟집, 흰 도장벽, 수족관 6개, 2층 통창, 옥상 현수막
 # ---------------------------------------------------------------------------
 
 def hoetjip02(text_fn=None):
@@ -586,7 +586,7 @@ def hoetjip02(text_fn=None):
     b.shell(g + u)
     f = b.face("front")
     f.storefront(0.5, b.w - 0.5, 0.03, 3.4, bay=1.4, doors=[(b.w / 2, 2.0)])
-    b.sign_band("front", 0.3, b.w - 0.3, 3.52, 4.8, "동해회센터", "활어 · 대게 · 물회 · 매운탕")
+    b.sign_band("front", 0.3, b.w - 0.3, 3.52, 4.8, "일산회센터", "활어 · 대게 · 물회 · 매운탕")
     b.awning("front", 0.5, b.w - 0.5, 3.33, depth=2.9, drop=0.5)
     for uu in (2.0, 4.6, 7.2, b.w - 7.2, b.w - 4.6, b.w - 2.0):
         b.aquarium("front", uu, w=2.2, d0=0.45)
@@ -614,7 +614,7 @@ def hoetjip02(text_fn=None):
         Facade(b.m, "front", bx0, bx1, by, by + 0.08).text(t, (bx1 - bx0) / 2, z + 1.85, 0.0, "letters", kind=None)
     b.roof_reserve("banner", bx0, bx1, by - 0.1, by + 0.2, z, z + 2.65)
     b.finalize()
-    return b, "동해회센터"
+    return b, "일산회센터"
 
 
 # ---------------------------------------------------------------------------
@@ -1119,7 +1119,7 @@ def pension01(text_fn=None):
 
 
 # ---------------------------------------------------------------------------
-# 11. 수산물 판매센터 — 4x3, 2층, 1층 롤업 셔터 점포 6칸 + 수조, 2층 식당, 대형 간판, 옥상 공조기
+# 11. 일산수산물판매센터 (실제, 일산해수욕장 남쪽) — 4x3, 2층, 1층 롤업 셔터 점포 6칸 + 수조, 2층 식당, 대형 간판, 옥상 공조기
 # ---------------------------------------------------------------------------
 
 STALLS = [("1호 활어", 1.0), ("2호 조개", 0.9), ("3호 대게", 1.0), ("4호 횟감", 0.75), ("5호 건어물", 1.0),
@@ -1153,7 +1153,7 @@ def market01(text_fn=None):
     for i in range(6):
         uu = pier * (i + 1) + open_w * i + open_w / 2
         f.window(uu, g + 0.8, 3.4, 2.0, lit=b.chance(0.6), blind=b.blind())
-    b.sign_band("front", 2.0, b.w - 2.0, g + u - 0.7, g + u + 0.95, "수산물 판매센터", "활어 · 조개 · 대게 · 건어물",
+    b.sign_band("front", 2.0, b.w - 2.0, g + u - 0.7, g + u + 0.95, "일산수산물판매센터", "활어 · 조개 · 대게 · 건어물",
                 out=0.35, letters="letters_blue")
     b.face("back").shutter(3.0, 7.0, 0.03, 4.0, open_frac=0.0, name="loading")
     side_details(b, back_door_u=10.0, levels=[g], side_n=3, back_n=4, gas_z=4.4)
@@ -1177,7 +1177,7 @@ def market01(text_fn=None):
     for i in range(4):
         b.ac_roof(b.x0 + 2.0 + i * 1.3, b.y0 + 2.2, z)
     b.finalize()
-    return b, "수산물 판매센터"
+    return b, "일산수산물판매센터"
 
 
 # ---------------------------------------------------------------------------
@@ -1331,7 +1331,9 @@ import landmarks  # noqa: E402
 import plaza  # noqa: E402
 
 import brands  # noqa: E402
+import franchises  # noqa: E402
 
 DESIGNS.update(landmarks.DESIGNS)
 DESIGNS.update(plaza.DESIGNS)
 DESIGNS.update(brands.DESIGNS)
+DESIGNS.update(franchises.DESIGNS)

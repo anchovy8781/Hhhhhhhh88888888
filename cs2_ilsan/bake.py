@@ -294,7 +294,7 @@ def tri_count(obj):
 # LOD 마다 지우는 디테일 (재질 이름 접두어). 작은 닫힌 조각(실외기 등)을 Collapse 로 줄이면 찌그러지므로
 # 디테일은 통째로 지우고, 남은 면은 같은 평면끼리만 합친다.
 LOD1_DROP = ("letters_glass", "blind", "grille", "rubber", "lamp", "crab_eye", "parking_line", "mailbox", "basin",
-             "styrofoam", "plastic", "gas_pipe", "led_strip", "speaker")
+             "styrofoam", "plastic", "gas_pipe", "led_strip", "speaker", "bread", "clam", "basket", "nozzle")
 LOD2_DROP = LOD1_DROP + ("letters", "frame", "metal", "ac", "stainless", "vinyl", "glass_tank", "water", "picto",
                          "parasol", "curtain", "glass_rail", "flower")
 

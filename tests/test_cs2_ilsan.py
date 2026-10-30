@@ -139,6 +139,17 @@ class PlacementTest(unittest.TestCase):
                 self.assertGreater(d_f[0], d_b[0])          # 백사장 위, 정면은 육지 쪽
                 self.assertLess(d_f[0], S.SAND_END)
                 continue
+            elif it["side"] == "road":                      # 방어진순환도로 변: 정면이 도로 쪽 앞선
+                (lf, af), (lb, ab) = self.lay.lateral(front_mid), self.lay.lateral(back_mid)
+                road0 = P.PLAZA_SEG * len(catalog.PLAZA_SEGMENTS)
+                if af < road0 + 1:                          # 바다 쪽: 앞선 = 광장 끝, 뒤가 바다 쪽
+                    self.assertAlmostEqual(af, road0, delta=0.01)
+                    self.assertLess(ab, af)
+                else:                                       # 내륙 쪽: 앞선 = 도로 건너편, 뒤가 내륙
+                    self.assertAlmostEqual(af, road0 + P.MAIN_ROAD_WIDTH, delta=0.01)
+                    self.assertGreater(ab, af)
+                self.assertGreater(abs(lf), P.PLAZA_HALF)
+                continue
             elif it["side"] == "main":                      # 방어진순환도로 건너편 (홈플러스): 광장 축 끝을 바라봄
                 (lf, af), (lb, ab) = self.lay.lateral(front_mid), self.lay.lateral(back_mid)
                 self.assertLess(af, ab)

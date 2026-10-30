@@ -49,7 +49,7 @@ def poster(f, u, z, w, h, d, board, text, letters, text_fn_b):
 #    (운전석 왼쪽에 주문판 · 픽업 창): 오른쪽 차로로 들어와 뒤에서 주문, 왼쪽 면 픽업 창에서 받고 앞으로 나간다.
 # ---------------------------------------------------------------------------
 
-def emblem(f, u, z, r, d=0.0, green="sb_green", white="sb_white", n=32):
+def emblem(f, u, z, r, d=0.0, green="sb_green", white="letters_sb", n=32):
     """원형 엠블럼: 초록 원판 + 흰 고리 + 초록 안쪽 + 흰 별 (상표 그림 대신 쓰는 근사치)"""
     f.disc(u, z, d, r, 0.10, green, n=n)
     f.disc(u, z, d + 0.10, r * 0.88, 0.015, white, n=n)
@@ -64,7 +64,7 @@ def starbucks_dt(text_fn=None):
         "sb_brick": dict(BRICK, color=(0.30, 0.12, 0.08), color2=(0.25, 0.10, 0.06)),
         "sb_wood": WOOD_LOUVER,
         "sb_green": sign((0.0, 0.16, 0.07), 0.6),
-        "sb_white": WHITE,
+        "letters_sb": WHITE,
         "parasol_sb": solid((0.0, 0.16, 0.07), 0.7),
         "menu": {"color": (0.12, 0.10, 0.09), "color2": (0.85, 0.82, 0.75), "pattern": "tile", "scale": (0.42, 0.16),
                  "mortar": 0.02, "mortar_color": (0.9, 0.88, 0.8), "rough": 0.4, "emit": (1.0, 0.95, 0.85),
@@ -88,7 +88,7 @@ def starbucks_dt(text_fn=None):
     f.curtain(0.4, 10.5, g + 0.1, H - 0.9, 3.0, 1.5, fins=0.3, fin_mat="sb_wood", lit=0.6, rng=b.rng, name="cw2")
     emblem(f, 12.8, g + 1.6, 1.25)
     f.reserve(SIGN, 11.5, 14.1, g + 0.3, g + 2.9, 0, 0.2, "emblem")
-    b.wall_text("front", "STARBUCKS", 5.45, H - 0.45, 9.5, 0.55, mat="sb_white")
+    b.wall_text("front", "STARBUCKS", 5.45, H - 0.45, 9.5, 0.55, mat="letters_sb")
     t = b.letters("WiFi · 텀블러 할인 · 사이렌 오더", 3.6, 0.22, 0.005)
     if t:
         f.glass_text(t, 9.0, 2.2, recess=0.25)
@@ -99,7 +99,7 @@ def starbucks_dt(text_fn=None):
                name="cw2_l")
     lf.window(6.0, 1.05, 2.0, 1.25, frame="frame_dark", name="pickup")
     b.canopy("left", 4.6, 7.4, 2.55, depth=1.1, mat="sb_green")
-    b.lightbox("left", 6.0, 2.85, 2.2, 0.42, "PICK-UP", mat="sb_green", letters="sb_white")
+    b.lightbox("left", 6.0, 2.85, 2.2, 0.42, "PICK-UP", mat="sb_green", letters="letters_sb")
     emblem(lf, 2.6, g + 1.6, 1.1)
     lf.reserve(SIGN, 1.4, 3.8, g + 0.45, g + 2.75, 0, 0.2, "emblem_l")
     # 오른쪽 면 (들어오는 차로): 앞 모서리 유리, 2층 유리, 큰 엠블럼, DRIVE THRU 간판
@@ -109,7 +109,7 @@ def starbucks_dt(text_fn=None):
                name="cw2_r")
     emblem(rf, 11.5, g + 1.6, 1.25)
     rf.reserve(SIGN, 10.2, 12.8, g + 0.3, g + 2.9, 0, 0.2, "emblem_r")
-    b.lightbox("right", 10.5, 2.4, 3.4, 0.6, "DRIVE THRU", mat="sb_green", letters="sb_white")
+    b.lightbox("right", 10.5, 2.4, 3.4, 0.6, "DRIVE THRU", mat="sb_green", letters="letters_sb")
     # 뒤: 직원 문, 실외기, 2층 창, 주문판 · 미리 보는 메뉴판 · 스피커 기둥 (뒤 차로를 향해)
     bk = b.face("back")                                                    # u = 7.5 - x
     bk.door(13.5, 1.0, 2.2, leaf="door_metal", canopy=False, name="staff")
@@ -128,7 +128,7 @@ def starbucks_dt(text_fn=None):
         if header:
             t = b.letters(header, w * 0.6, 0.2, 0.01)
             if t:
-                bk.text(t, uu, z0 + h + 0.14, 1.04, "sb_white", kind=None)
+                bk.text(t, uu, z0 + h + 0.14, 1.04, "letters_sb", kind=None)
         bk.reserve(FOREGROUND, uu - w / 2 - 0.05, uu + w / 2 + 0.05, 0.03, z0 + h + 0.36, 0.85, 1.1, "menu_board")
     bk.box(11.4, 11.6, 0.03, 1.25, 0.92, 1.12, "metal_dark", attached=False)              # 스피커 기둥
     bk.box(11.3, 11.7, 1.25, 1.55, 0.88, 1.16, "sb_green", attached=False)
@@ -172,7 +172,7 @@ def starbucks_dt(text_fn=None):
     gf = Facade(m, "front", 8.4, 11.15, gy - 0.1, gy + 0.1)
     t = b.letters("DRIVE THRU", 2.4, 0.4, 0.02)
     if t:
-        gf.text(t, 1.375, 3.275, 0.0, "sb_white", kind=None)
+        gf.text(t, 1.375, 3.275, 0.0, "letters_sb", kind=None)
     pf = Facade(m, "front", 8.9, 10.65, gy - 0.16, gy - 0.12)
     pf.box(0, 1.75, 2.63, 2.92, 0, 0.02, "plate_white")
     t = b.letters("높이제한 2.5m", 1.5, 0.2, 0.005)
@@ -196,7 +196,7 @@ def starbucks_dt(text_fn=None):
         emblem(pfac, 1.05, 5.45, 0.98, n=28)
         tt = b.letters("DRIVE THRU", 1.2, 0.3, 0.01)
         if tt:
-            Facade(m, side, px - 0.7, px + 0.7, py - 0.12, py + 0.12).text(tt, 0.7, 3.625, 0.0, "sb_white", kind=None)
+            Facade(m, side, px - 0.7, px + 0.7, py - 0.12, py + 0.12).text(tt, 0.7, 3.625, 0.0, "letters_sb", kind=None)
     f.reserve(FOREGROUND, 13.2, 15.4, 0.03, 6.5, 6.0, 6.4, "pylon")
     b.top = max(b.top, 6.5)
     b.finalize()
@@ -264,9 +264,9 @@ def terrace_park(variant, text_fn=None):
     f = b.face("front")
     for i, (u0, u1, text, sub, board, letter, door_u, awn) in enumerate(spec["shops"]):
         b.mats[f"board{i}"] = sign(board, 0.6)
-        b.mats[f"lt{i}"] = glow(letter, 2.2)
+        b.mats[f"letters_tp{i}"] = glow(letter, 2.2)
         f.storefront(u0, u1, 0.03, 3.9, bay=1.5, transom=2.8, doors=[(door_u, 1.6)], name=f"shop{i}")
-        b.sign_band("front", u0 + 0.05, u1 - 0.05, 4.0, 4.65, text, sub, out=0.3, mat=f"board{i}", letters=f"lt{i}")
+        b.sign_band("front", u0 + 0.05, u1 - 0.05, 4.0, 4.65, text, sub, out=0.3, mat=f"board{i}", letters=f"letters_tp{i}")
         if awn:
             b.mats[f"awning{i}"] = solid(awn, 0.7)
             b.awning("front", u0 + 0.2, u1 - 0.2, 3.8, depth=1.2, drop=0.3, valance=0.18, mat=f"awning{i}")
@@ -413,7 +413,7 @@ def homeplus(text_fn=None):
     b.mats.update({
         "wall": PANEL_WHITE, "wall_side": dict(PANEL_WHITE, color=(0.80, 0.80, 0.79), color2=(0.76, 0.76, 0.75)),
         "hp_red": dict(glow(HP_RED, 1.2), rough=0.4), "hp_orange": dict(glow(HP_ORANGE, 1.0), rough=0.4),
-        "hp_letters": glow(HP_RED, 3.5), "hp_canopy": solid((0.92, 0.92, 0.91), 0.35, 0.2),
+        "letters_hp": glow(HP_RED, 3.5), "hp_canopy": solid((0.92, 0.92, 0.91), 0.35, 0.2),
         "sign_daiso": sign((0.75, 0.02, 0.05), 0.7), "sign_olive": sign((0.35, 0.55, 0.10), 0.6),
         "sign_lotteria": sign((0.75, 0.02, 0.02), 0.7), "sign_pharm": sign((0.05, 0.40, 0.20), 0.6),
         "sign_p": sign((0.02, 0.15, 0.55), 0.8), "parking_deck": dict(PANEL_WHITE, color=(0.25, 0.25, 0.26),
@@ -435,7 +435,7 @@ def homeplus(text_fn=None):
     f.box(19.5, 36.5, 5.55, 5.6, 5.3, 5.5, "hp_red", attached=False)
     t = b.letters("Homeplus", 6.0, 0.48, 0.05)
     if t:
-        f.text(t, 28.0, 5.95, 5.5, "hp_letters", kind=None)
+        f.text(t, 28.0, 5.95, 5.5, "letters_hp", kind=None)
     for uu in range(22, 35, 3):
         f.box(uu - 0.3, uu + 0.3, 5.58, 5.6, 1.5, 4.5, "lamp", attached=False)
     for uu in (20.1, 35.9):
@@ -443,7 +443,7 @@ def homeplus(text_fn=None):
         m.cylinder(x, y, 0.3, 0.03, 5.6, "hp_canopy", n=16)
         f.reserve(FOREGROUND, uu - 0.31, uu + 0.31, 0.03, 5.5, 4.79, 5.41, "canopy_column")
     f.reserve(FOREGROUND, 19.5, 36.5, 5.55, 6.3, 0, 5.5, "canopy")
-    b.wall_text("front", "Homeplus", 28.0, 15.0, 24.0, 3.0, mat="hp_letters", extrude=0.15)
+    b.wall_text("front", "Homeplus", 28.0, 15.0, 24.0, 3.0, mat="letters_hp", extrude=0.15)
     # 1층 임대 매장 (간판)
     for u0, u1, door, text, sub, mat in ((1.0, 9.0, 5.0, "다이소", "Daiso", "sign_daiso"),
                                           (10.0, 18.5, 14.2, "OLIVE YOUNG", "올리브영", "sign_olive"),
@@ -494,7 +494,7 @@ def homeplus(text_fn=None):
             rf.window(uu, zf + 1.6, 3.0, 1.2, style="fixed", lit=b.chance(0.4))
     # 왼쪽 면: 큰 Homeplus 글자, 띠, 비상구, 리본 창, 대형 광고판
     lf = b.face("left")                                                    # u = 21 - y, 정면 쪽 u = 38
-    b.wall_text("left", "Homeplus", 26.0, 14.8, 16.0, 2.2, mat="hp_letters", extrude=0.12)
+    b.wall_text("left", "Homeplus", 26.0, 14.8, 16.0, 2.2, mat="letters_hp", extrude=0.12)
     lf.band(6.45, 6.75, 0.08, "hp_red", name="stripe_red")
     lf.band(6.75, 6.9, 0.08, "hp_orange", name="stripe_orange")
     for zf in (g, g + u):
@@ -597,7 +597,7 @@ def gs25(text_fn=None):
     b = Building((2, 2), 12.0, 9.0, setback=5.0, seed=65, text_fn=text_fn)     # y -3..6, 앞마당 5 m
     b.mats.update({
         "wall": render((0.92, 0.92, 0.90)), "wall_side": render((0.86, 0.86, 0.84)),
-        "gs_board": sign((0.95, 0.95, 0.93), 0.6), "gs_blue": glow((0.0, 0.17, 0.62), 2.5),
+        "gs_board": sign((0.95, 0.95, 0.93), 0.6), "letters_gs": glow((0.0, 0.17, 0.62), 2.5),
         "gs_cyan": glow((0.0, 0.35, 0.82), 1.5),
         "parasol_cass": solid((0.02, 0.12, 0.55), 0.7), "parasol_terra": solid((0.02, 0.25, 0.08), 0.7),
         "poster_red": sign((0.75, 0.03, 0.03), 0.4), "poster_yellow": sign((0.95, 0.80, 0.05), 0.4),
@@ -611,9 +611,9 @@ def gs25(text_fn=None):
     b.shell(g + u)
     f = b.face("front")
     f.storefront(0.4, 11.6, 0.03, 3.0, bay=1.2, transom=2.4, doors=[(2.2, 1.6)])
-    b.sign_band("front", 0.2, 11.8, 3.1, 3.95, "GS25", out=0.3, mat="gs_board", letters="gs_blue")
+    b.sign_band("front", 0.2, 11.8, 3.1, 3.95, "GS25", out=0.3, mat="gs_board", letters="letters_gs")
     f.box(0.2, 11.8, 3.12, 3.22, 0.3, 0.32, "gs_cyan", attached=False)
-    f.box(0.2, 11.8, 3.83, 3.93, 0.3, 0.32, "gs_blue", attached=False)
+    f.box(0.2, 11.8, 3.83, 3.93, 0.3, 0.32, "letters_gs", attached=False)
     store_front_details(b, f, [(4.3, 1.2, 0.7, 0.9, "poster_red", "1+1", "letters_yellow"),
                                (5.5, 1.2, 0.7, 0.9, "poster_yellow", "2+1", "letters_red"),
                                (8.6, 1.4, 0.8, 0.5, "poster_blue", "택배", "letters"),
@@ -643,7 +643,7 @@ def cu(text_fn=None):
     b = Building((2, 2), 12.5, 9.5, setback=4.5, seed=66, text_fn=text_fn)     # y -3.5..6, 1층 편의점 + 2 · 3층 다가구
     b.mats.update({
         "wall": dict(BRICK, color=(0.55, 0.38, 0.28), color2=(0.48, 0.33, 0.24)), "wall_side": render((0.82, 0.78, 0.72)),
-        "cu_board": sign((0.95, 0.95, 0.93), 0.6), "cu_purple": glow((0.13, 0.03, 0.27), 2.5),
+        "cu_board": sign((0.95, 0.95, 0.93), 0.6), "letters_cu": glow((0.13, 0.03, 0.27), 2.5),
         "cu_green": glow((0.40, 0.62, 0.04), 1.5),
         "parasol_terra": solid((0.02, 0.25, 0.08), 0.7), "parasol_cu": solid((0.13, 0.03, 0.27), 0.7),
         "poster_purple": sign((0.13, 0.03, 0.27), 0.4), "poster_green": sign((0.40, 0.62, 0.04), 0.4),
@@ -659,7 +659,7 @@ def cu(text_fn=None):
     b.shell(g + 2 * u)
     f = b.face("front")
     f.storefront(0.4, 12.1, 0.03, 3.0, bay=1.2, transom=2.4, doors=[(10.2, 1.6)])
-    b.sign_band("front", 0.2, 12.3, 3.1, 3.95, "CU", out=0.3, mat="cu_board", letters="cu_purple")
+    b.sign_band("front", 0.2, 12.3, 3.1, 3.95, "CU", out=0.3, mat="cu_board", letters="letters_cu")
     f.box(0.2, 12.3, 3.12, 3.24, 0.3, 0.32, "cu_green", attached=False)
     store_front_details(b, f, [(1.5, 1.2, 0.7, 0.9, "poster_purple", "1+1", "letters"),
                                (2.7, 1.2, 0.7, 0.9, "poster_green", "2+1", "letters_dark"),

@@ -65,6 +65,7 @@ class Mesh:
         self.verts = []
         self.faces = []
         self.mats = []
+        self.smooth = []        # 면마다 부드러운 음영 여부 (원기둥 옆면 · 구 · 곡면). 뚜껑 · 상자 · 글자는 각진 면
         self.mat_names = []
 
     def _mi(self, name):
@@ -72,18 +73,22 @@ class Mesh:
             self.mat_names.append(name)
         return self.mat_names.index(name)
 
-    def add(self, verts, faces, mat):
-        """면 방향을 그대로 쓴다 (호출자가 책임)"""
+    def add(self, verts, faces, mat, smooth=False):
+        """면 방향을 그대로 쓴다 (호출자가 책임). smooth = 전체 또는 면마다 부드러운 음영"""
         o = len(self.verts)
         self.verts += [tuple(float(c) for c in v) for v in verts]
         self.faces += [tuple(int(i) + o for i in f) for f in faces]
         self.mats += [self._mi(mat)] * len(faces)
+        self.smooth += list(smooth) if isinstance(smooth, (list, tuple)) else [bool(smooth)] * len(faces)
 
-    def add_solid(self, verts, faces, mat, skip=()):
-        """닫힌 조각: 부피가 음수면 모든 면을 뒤집어 바깥을 향하게 한 뒤 skip 번째 면은 빼고 추가"""
+    def add_solid(self, verts, faces, mat, skip=(), smooth=()):
+        """닫힌 조각: 부피가 음수면 모든 면을 뒤집어 바깥을 향하게 한 뒤 skip 번째 면은 빼고 추가.
+        smooth = 부드러운 음영을 줄 면 번호들 (True 면 전부)"""
         if signed_volume(verts, faces) < 0:
             faces = [tuple(reversed(f)) for f in faces]
-        self.add(verts, [f for i, f in enumerate(faces) if i not in skip], mat)
+        keep = [i for i in range(len(faces)) if i not in skip]
+        flags = [smooth is True or i in (smooth or ()) for i in keep]
+        self.add(verts, [faces[i] for i in keep], mat, flags)
 
     def merge(self, other, fn=None):
         """다른 Mesh 를 그대로 덧붙인다. fn(v) -> v 로 점을 옮길 수 있다 (면 방향이 바뀌지 않는 변환만)"""
@@ -91,6 +96,7 @@ class Mesh:
         self.verts += [tuple(fn(v)) if fn else v for v in other.verts]
         self.faces += [tuple(i + o for i in f) for f in other.faces]
         self.mats += [self._mi(other.mat_names[k]) for k in other.mats]
+        self.smooth += list(other.smooth)
 
     def quad(self, a, b, c, d, mat):
         self.add([a, b, c, d], [(0, 1, 2, 3)], mat)
@@ -111,12 +117,12 @@ class Mesh:
         v = [(x, y, z0) for x, y in ring] + [(x, y, z1) for x, y in ring]
         f = [(i, (i + 1) % n, n + (i + 1) % n, n + i) for i in range(n)]
         caps = [tuple(reversed(range(n))), tuple(range(n, 2 * n))]
-        self.add_solid(v, f + caps, mat, skip=() if cap else (n, n + 1))
+        self.add_solid(v, f + caps, mat, skip=() if cap else (n, n + 1), smooth=range(n))
 
     def cone(self, cx, cy, r, z0, z1, mat, n=16):
         v = [(cx + r * math.cos(2 * math.pi * i / n), cy + r * math.sin(2 * math.pi * i / n), z0) for i in range(n)]
         v.append((cx, cy, z1))
-        self.add_solid(v, [(i, (i + 1) % n, n) for i in range(n)] + [tuple(reversed(range(n)))], mat)
+        self.add_solid(v, [(i, (i + 1) % n, n) for i in range(n)] + [tuple(reversed(range(n)))], mat, smooth=range(n))
 
     def slab(self, top, thickness, mat):
         """네 점(top)을 윗면으로 하는 두께 있는 판 (경사 지붕 등)"""
@@ -133,7 +139,7 @@ class Mesh:
         ring = [(cy + r * math.cos(2 * math.pi * i / n), cz + r * math.sin(2 * math.pi * i / n)) for i in range(n)]
         v = [(x0, y, z) for y, z in ring] + [(x1, y, z) for y, z in ring]
         f = [(i, (i + 1) % n, n + (i + 1) % n, n + i) for i in range(n)]
-        self.add_solid(v, f + [tuple(reversed(range(n))), tuple(range(n, 2 * n))], mat)
+        self.add_solid(v, f + [tuple(reversed(range(n))), tuple(range(n, 2 * n))], mat, smooth=range(n))
 
     def beam(self, p0, p1, w, h, mat):
         """p0 -> p1 방향의 직사각 단면(w 가로, h 세로) 막대 (계단 옆판, 게 다리 등)"""
@@ -168,7 +174,7 @@ class Mesh:
                 v.append(tuple(p[k] + r * (math.cos(a) * e1[k] + math.sin(a) * e2[k]) for k in range(3)))
         f = [(i, (i + 1) % n, n + (i + 1) % n, n + i) for i in range(n)]
         self.add_solid(v, f + [tuple(reversed(range(n))), tuple(range(n, 2 * n))], mat,
-                       skip=() if cap else (n, n + 1))
+                       skip=() if cap else (n, n + 1), smooth=range(n))
 
     def extrude(self, pts, offset, mat):
         """평면 다각형 pts(3D 점, 순서대로)를 offset 벡터만큼 밀어낸 닫힌 기둥 (깃발 · 표지판 · 조형물)"""
@@ -190,7 +196,7 @@ class Mesh:
             j = (i + 1) % n
             f += [(ti + i, to + i, to + j, ti + j), (bi + i, bi + j, bo + j, bo + i),
                   (bo + i, bo + j, to + j, to + i), (bi + i, ti + i, ti + j, bi + j)]
-        self.add_solid(v, f, mat)
+        self.add_solid(v, f, mat, smooth={4 * i + k for i in range(n) for k in (2, 3)})
 
     def heightfield(self, x0, x1, y0, y1, nx, ny, fn, thickness, mat):
         """윗면이 z = fn(x, y) 인 두께 있는 곡면 판 (막 구조 천막 · 아치 다리 상판)"""
@@ -210,7 +216,7 @@ class Mesh:
                 [idx(i, ny) for i in range(nx, 0, -1)] + [idx(0, j) for j in range(ny, 0, -1)])
         for a, b in zip(ring, ring[1:] + ring[:1]):
             f.append((b, a, k + a, k + b))
-        self.add_solid(v, f, mat)
+        self.add_solid(v, f, mat, smooth=range(2 * nx * ny))
 
     def ellipsoid(self, cx, cy, cz, rx, ry, rz, mat, nu=16, nv=8):
         rings = [-math.pi / 2 + math.pi * j / nv for j in range(1, nv)]
@@ -227,7 +233,7 @@ class Mesh:
             f += [(a0 + i, a0 + (i + 1) % nu, a1 + (i + 1) % nu, a1 + i) for i in range(nu)]
         top, last = len(v) - 1, 1 + (len(rings) - 1) * nu
         f += [(last + i, last + (i + 1) % nu, top) for i in range(nu)]
-        self.add_solid(v, f, mat)
+        self.add_solid(v, f, mat, smooth=True)
 
 
 def _cross(a, b):
@@ -405,7 +411,7 @@ class Facade:
         ring = [(r * math.cos(2 * math.pi * i / n), r * math.sin(2 * math.pi * i / n)) for i in range(n)]
         v = [self.p(u + a, z + b, dd) for dd in (d, d + depth) for a, b in ring]
         f = [(i, (i + 1) % n, n + (i + 1) % n, n + i) for i in range(n)]
-        self.m.add_solid(v, f + [tuple(reversed(range(n))), tuple(range(n, 2 * n))], mat)
+        self.m.add_solid(v, f + [tuple(reversed(range(n))), tuple(range(n, 2 * n))], mat, smooth=range(n))
 
     def poly(self, pts, d, depth, mat):
         """벽면 위 다각형 [(u, z)] 을 d 에서 바깥으로 depth 만큼 밀어낸 조각 (로고 별 · 화살표 등)"""

@@ -205,6 +205,29 @@ def main_road(lay):
     return [lay.F + lay.n * a + lay.t * lat for lat in MAIN_ROAD_REACH], MAIN_ROAD_WIDTH
 
 
+def main_road_lots(lay, obstacles, step=0.5, start=37.0):
+    """방어진순환도로 양쪽 상가 (정면 = 도로). 바다 쪽은 도로 앞선(광장 끝)에서 바다 쪽으로, 내륙 쪽은 도로 건너편 앞선에서
+    내륙으로 들어간다. 광장 축에서 북 · 남으로 밀어 가며 겹치지 않는 자리에 놓는다."""
+    out = []
+    a_sea = PLAZA_SEG * len(catalog.PLAZA_SEGMENTS)
+    a_inland = a_sea + MAIN_ROAD_WIDTH
+    for (side, sgn), names in catalog.MAIN_ROAD_LOTS.items():
+        front, v = (a_sea, -lay.n) if side == "sea" else (a_inland, lay.n)
+        lat = start
+        limit = MAIN_ROAD_REACH[1] if sgn > 0 else -MAIN_ROAD_REACH[0]
+        for name in names:
+            w, d = cells(name)
+            while lat + w <= limit:
+                c_lat = sgn * (lat + w / 2)
+                corners, c = rect(lay.F + lay.n * front + lay.t * c_lat, v, w, d)
+                if not any(overlaps(corners, o) for o in obstacles + [it["corners"] for it in out]):
+                    out.append(item(name, "road", corners, c, v, axial=front, lateral=c_lat))
+                    lat += w
+                    break
+                lat += step
+    return out
+
+
 def across_main_road(lay):
     """방어진순환도로 건너편 (광장 축 끝 맞은편): 홈플러스 울산동구점 — 정면이 광장 · 바다 쪽"""
     a = PLAZA_SEG * len(catalog.PLAZA_SEGMENTS) + MAIN_ROAD_WIDTH
@@ -236,6 +259,8 @@ def plan(st, alleys, margin=10.0, step=0.25, layout=None):
     fixed = fixed_land(lay, [it["corners"] for it in plaza] + [lay.stream_poly])
     plaza += plaza_sides(lay, [it["corners"] for it in fixed] + [lay.stream_poly])
     plaza += across_main_road(lay)
+    obstacles = [it["corners"] for it in plaza + fixed] + [lay.stream_poly]
+    plaza += main_road_lots(lay, obstacles)
     obstacles = [it["corners"] for it in plaza + fixed] + [lay.stream_poly]
     total = float(lay.arc[-1])
     a_st = lay.to_arc(lay.s_st)

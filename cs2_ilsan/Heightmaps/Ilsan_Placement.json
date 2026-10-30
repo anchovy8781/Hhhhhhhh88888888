@@ -493,7 +493,7 @@
     ]
   },
   {
-    "asset": "IlsanCafe01",
+    "asset": "IlsanSikdang153",
     "side": "land",
     "s_mid": 425.7896163526669,
     "width": 16.0,
@@ -1238,6 +1238,398 @@
       [
         -180.2,
         108.7
+      ]
+    ]
+  },
+  {
+    "asset": "IlsanParisBaguette",
+    "side": "road",
+    "axial": 128.0,
+    "lateral": 45.0,
+    "game_x": -69.44,
+    "game_z": 116.56,
+    "rotation_deg": 309.8,
+    "ground_m": 46.12,
+    "corners_game_xz": [
+      [
+        -70.46,
+        127.83
+      ],
+      [
+        -80.71,
+        115.54
+      ],
+      [
+        -68.43,
+        105.29
+      ],
+      [
+        -58.18,
+        117.58
+      ]
+    ]
+  },
+  {
+    "asset": "IlsanBaskin",
+    "side": "road",
+    "axial": 128.0,
+    "lateral": 61.0,
+    "game_x": -59.19,
+    "game_z": 128.84,
+    "rotation_deg": 309.8,
+    "ground_m": 46.17,
+    "corners_game_xz": [
+      [
+        -60.21,
+        140.11
+      ],
+      [
+        -70.46,
+        127.83
+      ],
+      [
+        -58.18,
+        117.58
+      ],
+      [
+        -47.93,
+        129.86
+      ]
+    ]
+  },
+  {
+    "asset": "IlsanEmart24",
+    "side": "road",
+    "axial": 128.0,
+    "lateral": 77.0,
+    "game_x": -48.94,
+    "game_z": 141.13,
+    "rotation_deg": 309.8,
+    "ground_m": 46.34,
+    "corners_game_xz": [
+      [
+        -49.96,
+        152.4
+      ],
+      [
+        -60.21,
+        140.11
+      ],
+      [
+        -47.93,
+        129.86
+      ],
+      [
+        -37.67,
+        142.15
+      ]
+    ]
+  },
+  {
+    "asset": "IlsanCompose",
+    "side": "road",
+    "axial": 128.0,
+    "lateral": 93.0,
+    "game_x": -38.69,
+    "game_z": 153.41,
+    "rotation_deg": 309.8,
+    "ground_m": 46.62,
+    "corners_game_xz": [
+      [
+        -39.71,
+        164.68
+      ],
+      [
+        -49.96,
+        152.4
+      ],
+      [
+        -37.67,
+        142.15
+      ],
+      [
+        -27.42,
+        154.43
+      ]
+    ]
+  },
+  {
+    "asset": "IlsanOliveDaiso",
+    "side": "road",
+    "axial": 128.0,
+    "lateral": -74.0,
+    "game_x": -142.61,
+    "game_z": 22.63,
+    "rotation_deg": 309.8,
+    "ground_m": 48.58,
+    "corners_game_xz": [
+      [
+        -144.14,
+        39.53
+      ],
+      [
+        -159.51,
+        21.1
+      ],
+      [
+        -141.09,
+        5.73
+      ],
+      [
+        -125.71,
+        24.15
+      ]
+    ]
+  },
+  {
+    "asset": "IlsanCompose",
+    "side": "road",
+    "axial": 128.0,
+    "lateral": -94.0,
+    "game_x": -158.5,
+    "game_z": 9.84,
+    "rotation_deg": 309.8,
+    "ground_m": 48.09,
+    "corners_game_xz": [
+      [
+        -159.51,
+        21.1
+      ],
+      [
+        -169.77,
+        8.82
+      ],
+      [
+        -157.48,
+        -1.43
+      ],
+      [
+        -147.23,
+        10.85
+      ]
+    ]
+  },
+  {
+    "asset": "IlsanBBQ",
+    "side": "road",
+    "axial": 128.0,
+    "lateral": -110.0,
+    "game_x": -168.75,
+    "game_z": -2.45,
+    "rotation_deg": 309.8,
+    "ground_m": 47.54,
+    "corners_game_xz": [
+      [
+        -169.77,
+        8.82
+      ],
+      [
+        -180.02,
+        -3.46
+      ],
+      [
+        -167.73,
+        -13.72
+      ],
+      [
+        -157.48,
+        -1.43
+      ]
+    ]
+  },
+  {
+    "asset": "IlsanGasStation",
+    "side": "road",
+    "axial": 152.0,
+    "lateral": 57.0,
+    "game_x": -98.61,
+    "game_z": 156.53,
+    "rotation_deg": 129.8,
+    "ground_m": 51.77,
+    "corners_game_xz": [
+      [
+        -99.14,
+        130.92
+      ],
+      [
+        -73.51,
+        161.63
+      ],
+      [
+        -98.08,
+        182.13
+      ],
+      [
+        -123.71,
+        151.42
+      ]
+    ]
+  },
+  {
+    "asset": "IlsanEmart24",
+    "side": "road",
+    "axial": 152.0,
+    "lateral": 85.0,
+    "game_x": -74.53,
+    "game_z": 172.9,
+    "rotation_deg": 129.8,
+    "ground_m": 48.86,
+    "corners_game_xz": [
+      [
+        -73.51,
+        161.63
+      ],
+      [
+        -63.26,
+        173.92
+      ],
+      [
+        -75.54,
+        184.17
+      ],
+      [
+        -85.79,
+        171.88
+      ]
+    ]
+  },
+  {
+    "asset": "IlsanBBQ",
+    "side": "road",
+    "axial": 152.0,
+    "lateral": 101.0,
+    "game_x": -64.28,
+    "game_z": 185.18,
+    "rotation_deg": 129.8,
+    "ground_m": 48.23,
+    "corners_game_xz": [
+      [
+        -63.26,
+        173.92
+      ],
+      [
+        -53.01,
+        186.2
+      ],
+      [
+        -65.29,
+        196.45
+      ],
+      [
+        -75.54,
+        184.17
+      ]
+    ]
+  },
+  {
+    "asset": "IlsanCompose",
+    "side": "road",
+    "axial": 152.0,
+    "lateral": 117.0,
+    "game_x": -54.03,
+    "game_z": 197.47,
+    "rotation_deg": 129.8,
+    "ground_m": 48.56,
+    "corners_game_xz": [
+      [
+        -53.01,
+        186.2
+      ],
+      [
+        -42.76,
+        198.49
+      ],
+      [
+        -55.04,
+        208.74
+      ],
+      [
+        -65.29,
+        196.45
+      ]
+    ]
+  },
+  {
+    "asset": "IlsanMGBank",
+    "side": "road",
+    "axial": 152.0,
+    "lateral": -74.0,
+    "game_x": -176.39,
+    "game_z": 50.82,
+    "rotation_deg": 129.8,
+    "ground_m": 52.76,
+    "corners_game_xz": [
+      [
+        -177.94,
+        36.48
+      ],
+      [
+        -162.56,
+        54.91
+      ],
+      [
+        -174.85,
+        65.16
+      ],
+      [
+        -190.22,
+        46.73
+      ]
+    ]
+  },
+  {
+    "asset": "IlsanBaskin",
+    "side": "road",
+    "axial": 152.0,
+    "lateral": -94.0,
+    "game_x": -189.21,
+    "game_z": 35.46,
+    "rotation_deg": 129.8,
+    "ground_m": 49.15,
+    "corners_game_xz": [
+      [
+        -188.19,
+        24.2
+      ],
+      [
+        -177.94,
+        36.48
+      ],
+      [
+        -190.22,
+        46.73
+      ],
+      [
+        -200.48,
+        34.45
+      ]
+    ]
+  },
+  {
+    "asset": "IlsanParisBaguette",
+    "side": "road",
+    "axial": 152.0,
+    "lateral": -110.0,
+    "game_x": -199.46,
+    "game_z": 23.18,
+    "rotation_deg": 129.8,
+    "ground_m": 49.73,
+    "corners_game_xz": [
+      [
+        -198.44,
+        11.91
+      ],
+      [
+        -188.19,
+        24.2
+      ],
+      [
+        -200.48,
+        34.45
+      ],
+      [
+        -210.73,
+        22.16
       ]
     ]
   },

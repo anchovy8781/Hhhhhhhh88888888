@@ -18,7 +18,7 @@ def to_object(mesh, name, specs, collection=None):
     for n in mesh.mat_names:
         me.materials.append(make_material(f"{name}_{n}", specs[n]))
     me.polygons.foreach_set("material_index", mesh.mats)
-    me.polygons.foreach_set("use_smooth", [False] * len(me.polygons))
+    me.polygons.foreach_set("use_smooth", [bool(x) for x in mesh.smooth])   # 곡면만 부드럽게 (뚜껑과의 경계는 각짐)
     bm = bmesh.new()
     bm.from_mesh(me)
     bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-5)   # 면 방향은 바뀌지 않는다
@@ -47,7 +47,7 @@ def text_mesh(text, font, size, extrude=0.04):
     cu.extrude = extrude
     cu.align_x = 'CENTER'
     cu.align_y = 'CENTER'
-    cu.resolution_u = 4      # 글자 곡선 분할 (기본 12 는 폴리곤이 과함)
+    cu.resolution_u = 6      # 글자 곡선 분할 (기본 12 는 폴리곤이 과함, 4 는 곡선이 각져 보임)
     ob = bpy.data.objects.new("tmp_text", cu)
     bpy.context.scene.collection.objects.link(ob)
     dg = bpy.context.evaluated_depsgraph_get()
@@ -232,6 +232,14 @@ def make_material(name, spec):
         mix.inputs[2].default_value = (0.45, 0.42, 0.38, 1.0)
         color_out = mix.outputs[0]
 
+    if height_out is not None and "emit2" in spec:
+        # 발광색도 무늬를 따라 바꾼다: 유리 너머 진열대 · 방마다 다른 불빛 (밤에 Emissive 맵으로 보인다)
+        em = nt.nodes.new("ShaderNodeMixRGB")
+        nt.links.new(height_out, em.inputs[0])
+        em.inputs[1].default_value = (*spec["emit"], 1.0)
+        em.inputs[2].default_value = (*spec["emit2"], 1.0)
+        target = bsdf.inputs.get("Emission Color") or bsdf.inputs.get("Emission")
+        nt.links.new(em.outputs[0], target)
     if color_out is not None:
         nt.links.new(color_out, bsdf.inputs["Base Color"])
     else:

@@ -96,6 +96,11 @@ class DesignTest(unittest.TestCase):
             self.assertEqual([round(q - p, 3) for p, q in zip(fronts, fronts[1:])], [3.0, 3.0, 3.0], name)
         signs = {s.name for n in ("IlsanCornerTower01", "IlsanCornerTower02") for s in self.built[n][0].slots}
         self.assertTrue({"sign:CU", "sign:GS25", "sign:MEGA COFFEE", "sign:EDIYA COFFEE"} <= signs)
+        gs, _ = self.built["IlsanGasStation"]
+        self.assertIn("gs_orange", gs.m.mat_names)
+        self.assertGreater(gs.top, 7.0)                       # 가격 기둥 간판
+        for name in ("IlsanSikdang153", "IlsanMGBank", "IlsanParisBaguette"):
+            self.assertTrue(any(s.kind == G.OPENING for s in self.built[name][0].slots), name)
         hp, _ = self.built["IlsanHomeplus"]
         self.assertTrue(any(s.name == "atrium" for s in hp.slots))
         self.assertGreater(hp.top, 20)

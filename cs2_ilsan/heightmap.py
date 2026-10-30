@@ -210,7 +210,9 @@ def draw_overlay(h, st, dem, lat0, lon0, items, extras=None):
               "펜션": (150, 220, 255, 255), "주거": (200, 200, 200, 255), "화장실": (0, 255, 160, 255),
               "호텔": (255, 120, 255, 255), "상업빌딩": (0, 220, 255, 255), "청년공간": (255, 140, 0, 255),
               "광장": (230, 230, 230, 255), "조형물": (255, 255, 255, 255), "다리": (120, 160, 255, 255),
-              "편의점": (120, 255, 120, 255), "대형마트": (255, 60, 60, 255)}
+              "편의점": (120, 255, 120, 255), "대형마트": (255, 60, 60, 255), "베이커리": (60, 80, 200, 255),
+              "디저트": (255, 120, 180, 255), "생활용품": (255, 90, 90, 255), "주유소": (0, 120, 255, 255),
+              "금융": (255, 150, 0, 255), "식당": (200, 140, 255, 255)}
     extras = extras or {}
     if "main_road_xz" in extras:                                   # 방어진순환도로 (노랑 굵은 선)
         a, b = (to_px(*p) for p in extras["main_road_xz"])
@@ -254,7 +256,7 @@ def draw_overlay(h, st, dem, lat0, lon0, items, extras=None):
 
 
 SIDE_NAMES = {"land": "해변 도로 상가 줄", "plaza": "청년광장", "sea": "도로 바다 쪽", "beach": "백사장",
-              "main": "방어진순환도로 건너편", "center": "도로 위", "prop": "소품"}
+              "main": "방어진순환도로 건너편", "road": "방어진순환도로 변", "center": "도로 위", "prop": "소품"}
 
 
 def write_placement_md(path, items):
@@ -280,7 +282,7 @@ def write_placement_md(path, items):
         f.write("\n".join(lines) + "\n")
 
 
-KEEP = ("asset", "side", "s_mid", "axial", "width", "depth", "game_x", "game_z", "rotation_deg", "ground_m",
+KEEP = ("asset", "side", "s_mid", "axial", "lateral", "width", "depth", "game_x", "game_z", "rotation_deg", "ground_m",
         "corners_game_xz")
 
 

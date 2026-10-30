@@ -8,6 +8,7 @@ spec 키
   mortar, mortar_color 줄눈 폭 · 색
   rough, metal         거칠기, 금속성
   emit, emit_strength  발광색, 세기
+  emit2                무늬를 따라 발광색을 emit ~ emit2 로 바꾼다 (유리 너머 진열대 · 방마다 다른 불빛)
   bump                 범프 세기
   grime                아래쪽 오염 (0~1)
   control              ControlMask RGB (게임 색상 변형 영역: R = 도장 벽, G = 차양 · 천막 · 포인트색)
@@ -29,10 +30,14 @@ BASE = {
     "frame": {"color": (0.55, 0.57, 0.60), "rough": 0.35, "metal": 0.9},
     "frame_dark": {"color": (0.08, 0.08, 0.09), "rough": 0.4, "metal": 0.8},
     "glass": {"color": (0.05, 0.07, 0.08), "rough": 0.05, "metal": 0.6},
-    "glass_lit": {"color": (0.05, 0.07, 0.08), "rough": 0.05, "metal": 0.6,
-                  "emit": (1.0, 0.78, 0.50), "emit_strength": 0.8},
-    "glass_shop": {"color": (0.12, 0.14, 0.14), "rough": 0.05, "metal": 0.3,
-                   "emit": (1.0, 0.92, 0.80), "emit_strength": 0.5},
+    # 불 켜진 창: 방마다 다른 불빛 (발광색이 무늬를 따라 emit ~ emit2 사이에서 바뀐다)
+    "glass_lit": {"color": (0.05, 0.07, 0.08), "color2": (0.06, 0.08, 0.09), "pattern": "noise", "scale": 0.35,
+                  "rough": 0.05, "metal": 0.6, "emit": (1.0, 0.80, 0.52), "emit2": (0.42, 0.28, 0.15),
+                  "emit_strength": 0.9},
+    # 상점 유리: 유리 너머 진열대 · 천장 조명 (칸 = 진열대, 줄눈 = 선반 테두리)
+    "glass_shop": {"color": (0.11, 0.13, 0.13), "color2": (0.14, 0.15, 0.15), "pattern": "tile", "scale": (1.1, 0.5),
+                   "mortar": 0.035, "mortar_color": (0.05, 0.05, 0.05), "rough": 0.06, "metal": 0.3,
+                   "emit": (1.0, 0.86, 0.66), "emit2": (0.10, 0.08, 0.06), "emit_strength": 0.6},
     "glass_door": {"color": (0.08, 0.10, 0.10), "rough": 0.05, "metal": 0.4},
     "glass_frost": {"color": (0.55, 0.60, 0.62), "rough": 0.3, "metal": 0.1},
     "blind": {"color": (0.72, 0.68, 0.60), "color2": (0.66, 0.62, 0.55), "pattern": "siding", "scale": 0.04,
@@ -73,8 +78,9 @@ BASE = {
     # 커튼월 · 고층
     "glass_curtain": {"color": (0.09, 0.15, 0.19), "color2": (0.07, 0.12, 0.16), "pattern": "noise", "scale": 6.0,
                       "rough": 0.04, "metal": 0.75},
-    "glass_curtain_lit": {"color": (0.10, 0.14, 0.16), "rough": 0.05, "metal": 0.5,
-                          "emit": (1.0, 0.86, 0.62), "emit_strength": 0.9},
+    "glass_curtain_lit": {"color": (0.10, 0.14, 0.16), "color2": (0.09, 0.12, 0.14), "pattern": "noise",
+                          "scale": 0.3, "rough": 0.05, "metal": 0.5, "emit": (1.0, 0.86, 0.62),
+                          "emit2": (0.40, 0.30, 0.18), "emit_strength": 0.9},
     "spandrel": {"color": (0.10, 0.11, 0.12), "rough": 0.2, "metal": 0.6},
     "fin": {"color": (0.86, 0.86, 0.84), "rough": 0.35, "metal": 0.4},
     # 광장 · 조경

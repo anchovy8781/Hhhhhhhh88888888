@@ -5,14 +5,14 @@ CELL = 8.0
 # 이름: (부지 가로 셀, 세로 셀, 종류, 간판, 텍스처 해상도)
 ASSETS = {
     "IlsanHoetjip01": (2, 3, "횟집", "바다횟집", 2048),
-    "IlsanHoetjip02": (3, 3, "횟집", "동해회센터", 2048),
+    "IlsanHoetjip02": (3, 3, "횟집", "일산회센터", 2048),
     "IlsanCrab01": (2, 3, "대게", "대게 · 킹크랩", 2048),
     "IlsanCafe01": (2, 3, "카페", "카페 파도", 2048),
     "IlsanChicken01": (2, 2, "치킨", "교촌치킨", 2048),
     "IlsanGrill01": (2, 2, "조개구이", "조개구이", 1024),
     "IlsanShop01": (2, 2, "편의점", "세븐일레븐", 2048),
     "IlsanMixed01": (3, 3, "근린상가", "근린상가", 2048),
-    "IlsanMarket01": (4, 3, "시장", "수산물 판매센터", 2048),
+    "IlsanMarket01": (4, 3, "시장", "일산수산물판매센터", 2048),
     "IlsanMotel01": (3, 4, "숙박", "호텔 일산", 2048),
     "IlsanPension01": (2, 3, "펜션", "바다펜션", 2048),
     "IlsanVilla01": (2, 3, "주거", "해송빌라", 2048),
@@ -40,6 +40,16 @@ ASSETS = {
     "IlsanHomeplus": (8, 6, "대형마트", "홈플러스 울산동구점", 4096),
     "IlsanGS25": (2, 2, "편의점", "GS25", 2048),
     "IlsanCU": (2, 2, "편의점", "CU", 2048),
+    # 프랜차이즈 · 동네 실제 상호 (franchises.py)
+    "IlsanParisBaguette": (2, 2, "베이커리", "파리바게뜨", 2048),
+    "IlsanBaskin": (2, 2, "디저트", "배스킨라빈스", 2048),
+    "IlsanCompose": (2, 2, "카페", "컴포즈커피", 2048),
+    "IlsanOliveDaiso": (3, 3, "생활용품", "올리브영 · 다이소", 2048),
+    "IlsanEmart24": (2, 2, "편의점", "이마트24", 2048),
+    "IlsanBBQ": (2, 2, "치킨", "BBQ 치킨", 2048),
+    "IlsanGasStation": (5, 4, "주유소", "GS칼텍스 주유소", 4096),
+    "IlsanMGBank": (3, 2, "금융", "일산새마을금고", 2048),
+    "IlsanSikdang153": (2, 3, "식당", "식당153 울산본점", 2048),
 }
 
 # CS2 에서 가져올 때의 종류: building(부지 있는 건물) · plaza(광장 · 공원 부지) · prop(부지 없는 소품)
@@ -52,7 +62,7 @@ TYPE.update({n: "prop" for n in ("IlsanBeachRail", "IlsanPine01", "IlsanPine02",
 # 횟집 · 대게 · 조개구이가 많고 카페 · 치킨 · 숙박 · 펜션 · 근린상가가 섞인 해변 상가 분위기
 SEQUENCE = ["IlsanHoetjip01", "IlsanCafe01", "IlsanCrab01", "IlsanGrill01", "IlsanMotel01", "IlsanHoetjip02",
             "IlsanChicken01", "IlsanPension01", "IlsanShop01", "IlsanMixed01", "IlsanHoetjip01", "IlsanMarket01",
-            "IlsanVilla01", "IlsanHoetjip03", "IlsanCafe01", "IlsanCrab01", "IlsanChicken01", "IlsanHoetjip02",
+            "IlsanVilla01", "IlsanHoetjip03", "IlsanSikdang153", "IlsanCrab01", "IlsanChicken01", "IlsanHoetjip02",
             "IlsanPension01", "IlsanHoetjip03", "IlsanGrill01", "IlsanCU"]
 
 # 도로 바다 쪽(백사장 앞) 시설: (에셋, 해안선 길이 비율)
@@ -65,4 +75,12 @@ PLAZA_SEGMENTS = ["IlsanPlaza01", "IlsanPlaza01", "IlsanPlaza01", "IlsanPlazaSta
 PLAZA_SIDES = {
     "north": ["IlsanTerracePark01", "IlsanTerracePark02", "IlsanYouthStage", "IlsanHoetjip03"],
     "south": ["IlsanGS25", "IlsanBlueRoof01", "IlsanMixed01", "IlsanCrab01", "IlsanChicken01"],
+}
+
+# 방어진순환도로 변 상가 (도로를 바라본다). 바다 쪽 · 내륙 쪽, 광장 축에서 북 · 남으로 차례로
+MAIN_ROAD_LOTS = {
+    ("sea", 1): ["IlsanParisBaguette", "IlsanBaskin", "IlsanEmart24", "IlsanCompose"],
+    ("sea", -1): ["IlsanOliveDaiso", "IlsanCompose", "IlsanBBQ"],
+    ("inland", 1): ["IlsanGasStation", "IlsanEmart24", "IlsanBBQ", "IlsanCompose"],
+    ("inland", -1): ["IlsanMGBank", "IlsanBaskin", "IlsanParisBaguette"],
 }
