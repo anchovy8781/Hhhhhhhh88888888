@@ -1,6 +1,6 @@
 {
   "name": "IlsanChicken01",
-  "title": "치킨 · 호프",
+  "title": "교촌치킨",
   "kind": "치킨",
   "type": "building",
   "lot_cells": [
@@ -16,11 +16,11 @@
     10.5
   ],
   "height_m": 10.25,
-  "lod0_tris": 15396,
+  "lod0_tris": 15702,
   "openings": 13,
   "texture": 2048,
   "lod_tris": [
-    6540,
+    6593,
     1370
   ]
 }
