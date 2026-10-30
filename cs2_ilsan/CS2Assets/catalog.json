@@ -17,17 +17,17 @@
       15.0
     ],
     "height_m": 15.35,
-    "lod0_tris": 16543,
+    "lod0_tris": 21037,
     "openings": 22,
     "texture": 2048,
     "lod_tris": [
-      8629,
+      9883,
       1868
     ]
   },
   {
     "name": "IlsanHoetjip02",
-    "title": "동해회센터",
+    "title": "일산회센터",
     "kind": "횟집",
     "type": "building",
     "lot_cells": [
@@ -43,11 +43,11 @@
       14.5
     ],
     "height_m": 11.15,
-    "lod0_tris": 20305,
+    "lod0_tris": 27068,
     "openings": 16,
     "texture": 2048,
     "lod_tris": [
-      9292,
+      11212,
       1516
     ]
   },
@@ -69,11 +69,11 @@
       14.0
     ],
     "height_m": 14.35,
-    "lod0_tris": 12300,
+    "lod0_tris": 14616,
     "openings": 25,
     "texture": 2048,
     "lod_tris": [
-      7744,
+      8390,
       1984
     ]
   },
@@ -95,11 +95,11 @@
       18.0
     ],
     "height_m": 28.2,
-    "lod0_tris": 33131,
+    "lod0_tris": 37223,
     "openings": 96,
     "texture": 2048,
     "lod_tris": [
-      23576,
+      24738,
       6018
     ]
   },
@@ -121,11 +121,11 @@
       12.0
     ],
     "height_m": 12.95,
-    "lod0_tris": 8830,
+    "lod0_tris": 10126,
     "openings": 20,
     "texture": 2048,
     "lod_tris": [
-      6058,
+      6428,
       1612
     ]
   },
@@ -147,11 +147,11 @@
       11.0
     ],
     "height_m": 5.7,
-    "lod0_tris": 6239,
+    "lod0_tris": 8003,
     "openings": 0,
     "texture": 1024,
     "lod_tris": [
-      2727,
+      3229,
       106
     ]
   },
@@ -173,11 +173,11 @@
       15.0
     ],
     "height_m": 11.06,
-    "lod0_tris": 12746,
+    "lod0_tris": 16028,
     "openings": 13,
     "texture": 2048,
     "lod_tris": [
-      6851,
+      7714,
       2270
     ]
   },
@@ -199,11 +199,11 @@
       16.0
     ],
     "height_m": 23.15,
-    "lod0_tris": 35373,
+    "lod0_tris": 45927,
     "openings": 47,
     "texture": 2048,
     "lod_tris": [
-      16064,
+      18558,
       3462
     ]
   },
@@ -225,11 +225,11 @@
       13.0
     ],
     "height_m": 17.23,
-    "lod0_tris": 10955,
+    "lod0_tris": 12089,
     "openings": 40,
     "texture": 2048,
     "lod_tris": [
-      8446,
+      8774,
       2350
     ]
   },
@@ -251,17 +251,17 @@
       12.0
     ],
     "height_m": 12.83,
-    "lod0_tris": 6800,
+    "lod0_tris": 7646,
     "openings": 22,
     "texture": 2048,
     "lod_tris": [
-      4959,
+      5199,
       1664
     ]
   },
   {
     "name": "IlsanMarket01",
-    "title": "수산물 판매센터",
+    "title": "일산수산물판매센터",
     "kind": "시장",
     "type": "building",
     "lot_cells": [
@@ -277,11 +277,11 @@
       16.0
     ],
     "height_m": 13.65,
-    "lod0_tris": 31109,
+    "lod0_tris": 43639,
     "openings": 27,
     "texture": 2048,
     "lod_tris": [
-      13288,
+      16892,
       1832
     ]
   },
@@ -303,11 +303,11 @@
       10.5
     ],
     "height_m": 10.25,
-    "lod0_tris": 15702,
+    "lod0_tris": 20310,
     "openings": 13,
     "texture": 2048,
     "lod_tris": [
-      6593,
+      7736,
       1370
     ]
   },
@@ -329,11 +329,11 @@
       7.0
     ],
     "height_m": 4.0,
-    "lod0_tris": 5563,
+    "lod0_tris": 7699,
     "openings": 6,
     "texture": 1024,
     "lod_tris": [
-      2354,
+      2940,
       364
     ]
   },
@@ -355,11 +355,11 @@
       24.0
     ],
     "height_m": 79.35,
-    "lod0_tris": 64788,
+    "lod0_tris": 78978,
     "openings": 242,
     "texture": 4096,
     "lod_tris": [
-      39690,
+      43122,
       13247
     ]
   },
@@ -381,11 +381,11 @@
       20.0
     ],
     "height_m": 31.35,
-    "lod0_tris": 77977,
+    "lod0_tris": 107171,
     "openings": 63,
     "texture": 2048,
     "lod_tris": [
-      30554,
+      38259,
       3284
     ]
   },
@@ -407,11 +407,11 @@
       20.0
     ],
     "height_m": 31.35,
-    "lod0_tris": 74854,
+    "lod0_tris": 102840,
     "openings": 63,
     "texture": 2048,
     "lod_tris": [
-      29683,
+      36989,
       3284
     ]
   },
@@ -433,11 +433,11 @@
       17.0
     ],
     "height_m": 22.42,
-    "lod0_tris": 13607,
+    "lod0_tris": 15755,
     "openings": 42,
     "texture": 2048,
     "lod_tris": [
-      9872,
+      10472,
       3184
     ]
   },
@@ -459,11 +459,11 @@
       10.0
     ],
     "height_m": 9.1,
-    "lod0_tris": 22697,
+    "lod0_tris": 30425,
     "openings": 13,
     "texture": 2048,
     "lod_tris": [
-      9025,
+      11209,
       1466
     ]
   },
@@ -485,11 +485,11 @@
       9.5
     ],
     "height_m": 9.23,
-    "lod0_tris": 5241,
+    "lod0_tris": 6171,
     "openings": 12,
     "texture": 2048,
     "lod_tris": [
-      3172,
+      3440,
       930
     ]
   },
