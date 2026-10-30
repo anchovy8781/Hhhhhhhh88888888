@@ -1,0 +1,26 @@
+{
+  "name": "IlsanTerracePark02",
+  "title": "테라스파크 C동",
+  "kind": "상가",
+  "type": "building",
+  "lot_cells": [
+    4,
+    3
+  ],
+  "lot_m": [
+    32.0,
+    24.0
+  ],
+  "footprint_m": [
+    30.0,
+    20.0
+  ],
+  "height_m": 19.1,
+  "lod0_tris": 68543,
+  "openings": 54,
+  "texture": 2048,
+  "lod_tris": [
+    40169,
+    22668
+  ]
+}
