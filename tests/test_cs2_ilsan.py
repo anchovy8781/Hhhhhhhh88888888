@@ -139,6 +139,11 @@ class PlacementTest(unittest.TestCase):
                 self.assertGreater(d_f[0], d_b[0])          # 백사장 위, 정면은 육지 쪽
                 self.assertLess(d_f[0], S.SAND_END)
                 continue
+            elif it["side"] == "main":                      # 방어진순환도로 건너편 (홈플러스): 광장 축 끝을 바라봄
+                (lf, af), (lb, ab) = self.lay.lateral(front_mid), self.lay.lateral(back_mid)
+                self.assertLess(af, ab)
+                self.assertAlmostEqual(lf, 0.0, delta=0.01)
+                self.assertGreaterEqual(af, P.PLAZA_SEG * len(catalog.PLAZA_SEGMENTS) + P.MAIN_ROAD_WIDTH - 0.01)
             else:                                           # 광장 구간 · 광장 옆 상가
                 (lf, af), (lb, ab) = self.lay.lateral(front_mid), self.lay.lateral(back_mid)
                 if it["asset"].startswith("IlsanPlaza"):
@@ -164,6 +169,17 @@ class PlacementTest(unittest.TestCase):
         towers = {it["asset"]: self.lay.lateral(it["center"])[0] for it in self.land if "Corner" in it["asset"]}
         self.assertGreater(towers["IlsanCornerTower01"], P.PLAZA_HALF)       # 01 = 광장 북쪽(광장이 왼쪽)
         self.assertLess(towers["IlsanCornerTower02"], -P.PLAZA_HALF)
+
+    def test_real_brand_sites(self):
+        """테라스파크는 광장 북쪽, 홈플러스는 방어진순환도로 건너편, 스타벅스 DT 는 하천 남쪽 해변 도로"""
+        names = {it["asset"]: it for it in self.items}
+        for n in ("IlsanTerracePark01", "IlsanTerracePark02"):
+            self.assertGreater(self.lay.lateral(names[n]["center"])[0], P.PLAZA_HALF)
+        hp = names["IlsanHomeplus"]
+        self.assertEqual(hp["side"], "main")
+        sb = names["IlsanStarbucksDT"]
+        self.assertEqual(sb["side"], "land")
+        self.assertLess(self.lay.lateral(sb["center"])[0], -P.STREAM_FROM_PLAZA)
 
     def test_props_stay_off_lots(self):
         lots = [it["corners"] for it in self.items]

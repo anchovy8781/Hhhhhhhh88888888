@@ -184,3 +184,83 @@ def speaker(m, x, y, z, facing="-y"):
     if facing == "-y":
         Facade(m, "front", x - 0.3, x + 0.3, y - 0.25, y + 0.25).box(0.06, 0.54, 1.4, 2.0, 0, 0.01, "grille")
     return x - 0.46, x + 0.46, y - 0.46, y + 0.46, z, z + 2.1
+
+
+def star(cu, cz, r_out, r_in, n=5, rot=math.pi / 2):
+    """별 꼭짓점 [(u, z)] (반시계)"""
+    pts = []
+    for k in range(2 * n):
+        r = r_out if k % 2 == 0 else r_in
+        a = rot + math.pi * k / n
+        pts.append((cu + r * math.cos(a), cz + r * math.sin(a)))
+    return pts
+
+
+def flat_text(m, letters, x, y, z, mat, angle=0.0, stretch=1.0):
+    """바닥에 눕힌 글자 (노면 표시). angle = 글자 위쪽이 향하는 방향 (0 = +Y), stretch = 진행 방향으로 늘림"""
+    if letters is None:
+        return
+    verts, faces, _, _, depth = letters
+    ca, sa = math.cos(angle), math.sin(angle)
+    m.add([(x + lx * ca - ly * stretch * sa, y + lx * sa + ly * stretch * ca, z + depth / 2 + lz)
+           for lx, ly, lz in verts], faces, mat)
+
+
+def arrow(m, x, y, z, angle, length=3.0, width=0.5, mat="paint_white"):
+    """바닥 화살표 (angle = 가리키는 방향, 0 = +Y)"""
+    hw, hh = width / 2, width * 1.1
+    shape = [(-hw, -length / 2), (hw, -length / 2), (hw, length / 2 - 1.0), (hh, length / 2 - 1.0),
+             (0.0, length / 2), (-hh, length / 2 - 1.0), (-hw, length / 2 - 1.0)]
+    ca, sa = math.cos(angle), math.sin(angle)
+    m.extrude([(x + px * ca - py * sa, y + px * sa + py * ca, z) for px, py in shape], (0, 0, 0.006), mat)
+
+
+def cafe_set(m, x, y, z, canopy, r=1.1, chairs=4, h=2.4, seat="plastic_white"):
+    """카페 테라스 한 조: 원탁 + 의자 + 파라솔 (브랜드 색 천)"""
+    m.cylinder(x, y, 0.38, z + 0.72, z + 0.75, "plastic_white", n=14)
+    m.cylinder(x, y, 0.22, z, z + 0.04, "metal_dark", n=12)
+    for a in range(chairs):
+        ang = a * 2 * math.pi / chairs + 0.4
+        cx, cy = x + 0.68 * math.cos(ang), y + 0.68 * math.sin(ang)
+        m.box(cx - 0.2, cx + 0.2, cy - 0.2, cy + 0.2, z + 0.42, z + 0.46, seat)
+        bx, by = cx + 0.18 * math.cos(ang), cy + 0.18 * math.sin(ang)
+        m.box(bx - 0.06 - 0.12 * abs(math.sin(ang)), bx + 0.06 + 0.12 * abs(math.sin(ang)),
+              by - 0.06 - 0.12 * abs(math.cos(ang)), by + 0.06 + 0.12 * abs(math.cos(ang)), z + 0.46, z + 0.85, seat)
+        for lx, ly in ((-0.15, -0.15), (0.15, -0.15), (0.15, 0.15), (-0.15, 0.15)):
+            m.box(cx + lx - 0.015, cx + lx + 0.015, cy + ly - 0.015, cy + ly + 0.015, z, z + 0.42, "metal_dark")
+    parasol(m, x, y, z + 0.75, r=r, h=h - 0.75, mat=canopy)
+    m.cylinder(x, y, 0.03, z, z + 0.75, "metal", n=6)
+    return x - max(r, 0.95), x + max(r, 0.95), y - max(r, 0.95), y + max(r, 0.95), z, z + h
+
+
+def freezer(m, x0, x1, y0, y1, z=0.03, body="plastic_white", glass="glass_tank"):
+    """아이스크림 냉장고: 몸체 + 비스듬한 유리 뚜껑"""
+    m.box(x0, x1, y0, y1, z, z + 0.82, body)
+    m.box(x0 + 0.05, x1 - 0.05, y0 + 0.05, y1 - 0.05, z + 0.82, z + 0.86, glass)
+    m.box(x0, x1, y0, y1, z + 0.86, z + 0.9, "metal")
+    return x0, x1, y0, y1, z, z + 0.9
+
+
+def scooter(m, x, y, z=0.03, box="plastic_red"):
+    """배달 오토바이 (X 방향): 바퀴 2 + 차체 + 좌석 + 핸들 + 뒤 배달통"""
+    for wx in (x - 0.6, x + 0.6):
+        m.cylinder_x(wx - 0.05, wx + 0.05, y, z + 0.27, 0.27, "rubber", n=12)
+    m.box(x - 0.55, x + 0.45, y - 0.14, y + 0.14, z + 0.3, z + 0.55, "plastic_white")
+    m.box(x - 0.45, x + 0.05, y - 0.15, y + 0.15, z + 0.55, z + 0.68, "rubber")
+    m.beam((x + 0.5, y, z + 0.4), (x + 0.42, y, z + 1.0), 0.06, 0.06, "metal_dark")
+    m.box(x + 0.38, x + 0.46, y - 0.35, y + 0.35, z + 0.98, z + 1.02, "metal_dark")
+    m.box(x - 0.95, x - 0.45, y - 0.25, y + 0.25, z + 0.62, z + 1.1, box)
+    return x - 0.95, x + 0.9, y - 0.35, y + 0.35, z, z + 1.1
+
+
+def carts(m, x0, y0, z, rows, per_row, dx=0.95, dy=0.32):
+    """쇼핑 카트 줄 (X 방향으로 줄, 줄 안에서 Y 로 겹쳐 꽂힘)"""
+    for r in range(rows):
+        for k in range(per_row):
+            x, y = x0 + r * dx, y0 + k * dy
+            m.box(x - 0.28, x + 0.28, y - 0.4, y + 0.4, z + 0.5, z + 0.95, "grille")
+            m.box(x - 0.3, x + 0.3, y + 0.38, y + 0.42, z + 0.95, z + 1.02, "plastic_red")
+            m.box(x - 0.22, x + 0.22, y - 0.38, y + 0.3, z + 0.12, z + 0.16, "metal")
+            for wx in (x - 0.2, x + 0.2):
+                m.box(wx - 0.03, wx + 0.03, y - 0.03, y + 0.03, z, z + 0.12, "rubber")
+    return (x0 - 0.3, x0 + (rows - 1) * dx + 0.3, y0 - 0.42, y0 + (per_row - 1) * dy + 0.42, z, z + 1.02)

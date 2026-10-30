@@ -730,18 +730,20 @@ def shop01(text_fn=None):
     b.mats.update({
         "wall": BRICK, "wall_side": BRICK,
         "sign": sign((0.90, 0.90, 0.88), 0.5),
-        "accent": {"color": (0.05, 0.45, 0.25), "rough": 0.4, "emit": (0.1, 0.8, 0.4), "emit_strength": 0.5,
-                   "control": (0, 1, 0)},
-        "letters_dark": {"color": (0.05, 0.35, 0.18), "rough": 0.4, "emit": (0.1, 0.8, 0.4), "emit_strength": 1.0},
+        "accent": {"color": (0.92, 0.35, 0.02), "rough": 0.4, "emit": (1.0, 0.45, 0.05), "emit_strength": 0.6},
+        "accent2": {"color": (0.0, 0.40, 0.25), "rough": 0.4, "emit": (0.05, 0.6, 0.35), "emit_strength": 0.6},
+        "accent3": {"color": (0.80, 0.05, 0.05), "rough": 0.4, "emit": (1.0, 0.1, 0.05), "emit_strength": 0.6},
+        "letters_dark": {"color": (0.0, 0.40, 0.25), "rough": 0.4, "emit": (0.05, 0.7, 0.4), "emit_strength": 1.2},
     })
     g, u = 4.0, 2.9
     b.lot_slab()
     b.shell(g + 2 * u)
     f = b.face("front")
     f.storefront(0.5, b.w - 0.5, 0.03, 3.05, bay=1.3, doors=[(2.2, 1.7)])
-    b.sign_band("front", 0.2, b.w - 0.2, 3.15, 3.72, "편의점 24", out=0.3, letters="letters_dark")
-    for zz in (3.15, 3.62):
-        f.box(0.2, b.w - 0.2, zz, zz + 0.1, 0.3, 0.31, "accent", attached=False)
+    b.sign_band("front", 0.2, b.w - 0.2, 3.15, 3.72, "7-ELEVEN", out=0.3, letters="letters_dark")
+    for zz, mat in ((3.15, "accent"), (3.62, "accent2")):                     # 세븐일레븐 주황 · 초록 · 빨강 띠
+        f.box(0.2, b.w - 0.2, zz, zz + 0.1, 0.3, 0.31, mat, attached=False)
+    f.box(0.2, 1.4, 3.25, 3.62, 0.3, 0.31, "accent3", attached=False)
     for z in (g, g + u):
         b.balcony("front", 0.8, b.w - 0.8, z, depth=1.2)
         for uu in (3.4, b.w - 3.4):
@@ -757,7 +759,7 @@ def shop01(text_fn=None):
     b.stair_house(b.x0 + 0.6, b.x0 + 3.4, b.y1 - 3.6, b.y1 - 0.6)
     b.ac_roof(1.0, b.y1 - 1.0, z)
     b.finalize()
-    return b, "편의점"
+    return b, "세븐일레븐"
 
 
 # ---------------------------------------------------------------------------
@@ -932,7 +934,7 @@ def mixed01(text_fn=None):
     b.sign_band("front", 0.3, 9.5, 3.42, 4.08, "약국", mat="sign_pharm")
     for (a, c, d0, d1) in ((0.62, 1.22, 3.63, 3.87), (0.80, 1.04, 3.45, 4.05)):   # 약국 십자
         f.box(a, c, d0, d1, 0.32, 0.38, "cross", attached=False)
-    b.sign_band("front", 12.5, 21.7, 3.42, 4.08, "분식 · 김밥 · 라면", mat="sign_food")
+    b.sign_band("front", 12.5, 21.7, 3.42, 4.08, "김밥천국", mat="sign_food")
     b.lightbox("front", 11.0, 3.42, 2.3, 0.62, "일산빌딩", mat="sign_bldg")
     for (name, _, short), zf, k in zip(FLOOR_SIGNS, floors, range(2, 6)):
         b.sign_band("front", 0.5, b.w - 1.4, zf + 0.1, zf + 0.92, name, out=0.25, mat=f"sign_f{k}")
@@ -1197,7 +1199,7 @@ def chicken01(text_fn=None):
     b.shell(g + u)
     f = b.face("front")
     f.storefront(0.5, b.w - 0.5, 0.03, 3.05, bay=1.2, doors=[(b.w / 2, 1.8)])
-    b.sign_band("front", 0.25, b.w - 0.25, 3.18, 3.95, "치킨 · 호프", "생맥주 · 후라이드 · 양념",
+    b.sign_band("front", 0.25, b.w - 0.25, 3.18, 3.95, "교촌치킨", "허니콤보 · 레드콤보 · 생맥주",
                 letters="letters_dark")
     b.awning("front", 0.5, b.w - 0.5, 2.98, depth=2.8, drop=0.3, valance=0.25)
     for uu in (2.2, 4.4, b.w - 4.4, b.w - 2.2):                                     # 야외 테이블
@@ -1231,7 +1233,7 @@ def chicken01(text_fn=None):
     b.ac_roof(0.0, b.y1 - 1.0, z)
     b.ac_roof(1.3, b.y1 - 1.0, z)
     b.finalize()
-    return b, "치킨 · 호프"
+    return b, "교촌치킨"
 
 
 # ---------------------------------------------------------------------------
@@ -1328,5 +1330,8 @@ DESIGNS = {
 import landmarks  # noqa: E402
 import plaza  # noqa: E402
 
+import brands  # noqa: E402
+
 DESIGNS.update(landmarks.DESIGNS)
 DESIGNS.update(plaza.DESIGNS)
+DESIGNS.update(brands.DESIGNS)

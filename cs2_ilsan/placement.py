@@ -10,6 +10,8 @@
     양옆에 광장을 바라보는 상가(catalog.PLAZA_SIDES)를 세운다. 광장 입구 도로 위에 회전교차로 중앙섬.
   - 하천: 광장 남쪽을 가로질러 바다로 흐르는 물길. 육지 쪽 부지를 비우고 산책로에 보행교.
   - 해변 쪽: 화장실 2, 광장 축 끝 백사장의 삼각 조형물, 하천 보행교.
+  - 방어진순환도로: 광장 끝(바다에서 128 m)을 가로지르는 간선도로. 건너편에 홈플러스 울산동구점.
+  - 실제 브랜드: 광장 북쪽 테라스파크 A · C동, 해변 도로의 스타벅스 울산일산비치DT점 · CU, 광장 남쪽 GS25.
   - 소품: 백사장 가장자리 해송, 산책로의 검은 난간, 노면 글자 'CCTV 주차단속'.
 모든 항목은 중심(center), 안쪽 방향 v(에셋의 +Y = 정면의 반대), 모서리(corners)를 가진다.
 """
@@ -31,6 +33,9 @@ PLAZA_SEG = 32.0                     # 광장 구간 길이 (4셀)
 STREAM_FROM_PLAZA = 55.0             # 하천 위치: 광장 축에서 남쪽으로 (m, 광장과 나란히 흐른다)
 STREAM_HALF = 7.0                    # 하천 + 둑 반폭
 HOTEL_FROM_PLAZA = -150.0            # 호텔 부지 중앙: 광장에서 북쪽으로 (앞선 길이 m)
+STARBUCKS_FROM_PLAZA = 92.0          # 스타벅스 DT 부지 중앙: 광장에서 남쪽으로 (앞선 길이 m, 하천에 걸리면 더 민다)
+MAIN_ROAD_WIDTH = 24.0               # 방어진순환도로 (광장 끝을 가로지르는 4차로 간선도로) 폭
+MAIN_ROAD_REACH = (-230.0, 260.0)    # 광장 축 기준 가로 범위 (남 -, 북 +)
 PINE_OFFSET = 40.5                   # 해송 줄 (해안선에서, 호안 44 m 바로 바다 쪽 백사장)
 RAIL_OFFSET = 49.7                   # 난간 줄 (도로 바다 쪽 끝 50 m 바로 안쪽 산책로)
 
@@ -171,7 +176,7 @@ def plaza_sides(lay, obstacles, step=0.25):
 
 
 def fixed_land(lay, obstacles, step=0.25):
-    """광장 모퉁이 유리 상가 2동 (광장에서 바깥으로 밀어 겹치지 않게) + 타니베이호텔"""
+    """광장 모퉁이 유리 상가 2동 (광장에서 바깥으로 밀어 겹치지 않게), 타니베이호텔, 스타벅스 DT (하천을 피해 남쪽으로)"""
     a_p = lay.to_arc(lay.s_p)
     out = []
     for name, sgn in (("IlsanCornerTower01", -1), ("IlsanCornerTower02", 1)):
@@ -184,7 +189,28 @@ def fixed_land(lay, obstacles, step=0.25):
         out.append(it)
     w, _ = cells("IlsanTanibayHotel")
     out.append(lay.land_lot("IlsanTanibayHotel", a_p + HOTEL_FROM_PLAZA - w / 2))
+    w, _ = cells("IlsanStarbucksDT")
+    a0 = a_p + STARBUCKS_FROM_PLAZA - w / 2
+    it = lay.land_lot("IlsanStarbucksDT", a0)
+    while any(overlaps(it["corners"], o) for o in obstacles + [o["corners"] for o in out]):
+        a0 += step
+        it = lay.land_lot("IlsanStarbucksDT", a0)
+    out.append(it)
     return out
+
+
+def main_road(lay):
+    """방어진순환도로: 광장 끝에서 광장 축에 수직으로 지나는 간선도로 (중심선 두 끝점, 폭)"""
+    a = PLAZA_SEG * len(catalog.PLAZA_SEGMENTS) + MAIN_ROAD_WIDTH / 2
+    return [lay.F + lay.n * a + lay.t * lat for lat in MAIN_ROAD_REACH], MAIN_ROAD_WIDTH
+
+
+def across_main_road(lay):
+    """방어진순환도로 건너편 (광장 축 끝 맞은편): 홈플러스 울산동구점 — 정면이 광장 · 바다 쪽"""
+    a = PLAZA_SEG * len(catalog.PLAZA_SEGMENTS) + MAIN_ROAD_WIDTH
+    w, d = cells("IlsanHomeplus")
+    corners, c = rect(lay.F + lay.n * a, lay.n, w, d)
+    return [item("IlsanHomeplus", "main", corners, c, lay.n, axial=a)]
 
 
 def _merge(blocks):
@@ -209,6 +235,7 @@ def plan(st, alleys, margin=10.0, step=0.25, layout=None):
     plaza = plaza_segments(lay)
     fixed = fixed_land(lay, [it["corners"] for it in plaza] + [lay.stream_poly])
     plaza += plaza_sides(lay, [it["corners"] for it in fixed] + [lay.stream_poly])
+    plaza += across_main_road(lay)
     obstacles = [it["corners"] for it in plaza + fixed] + [lay.stream_poly]
     total = float(lay.arc[-1])
     a_st = lay.to_arc(lay.s_st)

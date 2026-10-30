@@ -1,7 +1,7 @@
 """배치 검증용 미리보기: 하이트맵 지형 + 도로 + 배치표대로 놓은 CS2 에셋(FBX)을 블렌더에 재현한다.
 
     blender -b --python preview_layout.py -- --render layout.png [--night] [--camera aerial|street]
-    blender -b --python preview_layout.py -- --photos docs/      # 사진 6장과 같은 구도로 real_01~06.jpg
+    blender -b --python preview_layout.py -- --photos docs/      # 사진 6장 구도 real_01~06.jpg + 브랜드 매장 brand_01~04.jpg
 
 게임과 같은 좌표(맵 중심 원점, x 동쪽, z 북쪽 → 블렌더 x, y)와 높이(해수면 40 m → 블렌더 0 m)를 쓴다.
 도로(노란 중앙선) · 회전교차로 고리 · 하천 물길의 물도 함께 놓는다.
@@ -34,8 +34,8 @@ def args():
     p.add_argument("--render")
     p.add_argument("--night", action="store_true")
     p.add_argument("--camera", default="aerial", choices=("aerial", "street"))
-    p.add_argument("--photos", help="사진 구도 6장을 이 폴더에 real_0N.jpg 로 렌더")
-    p.add_argument("--only", help="--photos 중 일부 번호만 (예: 1,4)")
+    p.add_argument("--photos", help="사진 구도 6장(real_0N.jpg) + 실제 브랜드 매장 4장(brand_0N.jpg)을 이 폴더에 렌더")
+    p.add_argument("--only", help="--photos 중 일부 이름만 (예: real_01,brand_02)")
     p.add_argument("--samples", type=int, default=48)
     p.add_argument("--save")
     return p.parse_args(argv)
@@ -104,6 +104,31 @@ def mesh(name, verts, faces, material):
     o = bpy.data.objects.new(name, me)
     bpy.context.scene.collection.objects.link(o)
     return o
+
+
+def main_road(info):
+    """방어진순환도로 (광장 끝을 가로지르는 4차로) + 노란 중앙선"""
+    road = info.get("main_road")
+    if not road:
+        return
+    pts = road["centerline_game_xz"]
+    P = np.array([[p["x"], p["z"]] for p in pts])
+    Z = np.array([p["ground_m"] - info["sea_level_m"] for p in pts]) + ROAD_LIFT
+    d = P[-1] - P[0]
+    d /= np.linalg.norm(d)
+    n = np.array([d[1], -d[0]])
+    k = len(P)
+    for name, a, b, dz, col in (("main_road", road["width_m"] / 2 - 2.0, -road["width_m"] / 2 + 2.0, 0.0,
+                                 (0.05, 0.05, 0.055)),
+                                ("main_center_l", 0.25, 0.1, 0.02, (0.85, 0.62, 0.04)),
+                                ("main_center_r", -0.1, -0.25, 0.02, (0.85, 0.62, 0.04)),
+                                ("main_walk_l", road["width_m"] / 2, road["width_m"] / 2 - 2.0, 0.12,
+                                 (0.42, 0.40, 0.38)),
+                                ("main_walk_r", -road["width_m"] / 2 + 2.0, -road["width_m"] / 2, 0.12,
+                                 (0.42, 0.40, 0.38))):
+        verts = [(x, y, z + dz) for (x, y), z in zip(P + n * a, Z)] + [(x, y, z + dz) for (x, y), z in zip(P + n * b, Z)]
+        faces = [(i, i + 1, k + i + 1, k + i) for i in range(k - 1)]
+        mesh(name, verts, faces, mat(name, col, 0.85))
 
 
 def stream(info, height, width=7.0, n=80):
@@ -247,7 +272,19 @@ def photo_cameras(info, items, P, n, height):
     i2, i2t = ir + 19, ir + 7
     lane = lambda i: P[i] - n[i] * 2.4                       # noqa: E731  바다 쪽 차로 (북쪽으로 달림)
     z2 = info["street_centerline_game_xz"][i2]["ground_m"] - info["sea_level_m"] + ROAD_LIFT
-    return [
+    def facing(name, dist, side=0.0, h=4.0, look_up=4.0, lens=24):
+        """실제 브랜드 매장 정면에서 dist m 떨어진 곳 (side = 정면 기준 오른쪽으로 비킴)"""
+        c, gz, rot = at(name)
+        fr = np.array([math.sin(math.radians(rot)), math.cos(math.radians(rot))])
+        rt = np.array([fr[1], -fr[0]])
+        pos = c + fr * dist + rt * side
+        return p3(pos, max(height(*pos), gz) + h), p3(c, gz + look_up), lens
+
+    brands = [("brand_01",) + facing("IlsanTerracePark01", 26.0, -14.0, 1.7, 5.5, 22),
+              ("brand_02",) + facing("IlsanStarbucksDT", 30.0, 12.0, 3.0, 3.5, 24),
+              ("brand_03",) + facing("IlsanHomeplus", 70.0, -18.0, 9.0, 8.0, 26),
+              ("brand_04",) + facing("IlsanGS25", 15.0, -6.0, 1.7, 2.5, 22)]
+    return brands + [
         ("real_01", p3(R - ax * 15 - tp * 21, zr + 4.5), p3(tower, tz + 12), 20),
         ("real_02", p3(lane(i2), z2 + 1.5), p3(lane(i2t), z2 + 2.6), 24),
         ("real_03", p3(R - ax * 480 + tp * 120, 230), p3(R + ax * 40, 0), 30),
@@ -287,6 +324,7 @@ def main():
         items = json.load(f)
     height = terrain(a.maps, info)
     stream(info, height)
+    main_road(info)
     P, n = road(info)
     place(items, a.assets, a.night)
     camera(a.camera, P, n)
@@ -307,9 +345,9 @@ def main():
         sc.render.resolution_x, sc.render.resolution_y = 1600, 900
         sc.render.image_settings.file_format = 'JPEG'
         sc.render.image_settings.quality = 88
-        only = {int(k) for k in a.only.split(",")} if a.only else None
-        for k, (name, pos, target, lens) in enumerate(photo_cameras(info, items, P, n, height), 1):
-            if only and k not in only:
+        only = set(a.only.split(",")) if a.only else None
+        for name, pos, target, lens in photo_cameras(info, items, P, n, height):
+            if only and name not in only:
                 continue
             look(sc.camera, pos, target, lens)
             sc.render.filepath = os.path.join(os.path.abspath(a.photos), name + ".jpg")

@@ -407,6 +407,11 @@ class Facade:
         f = [(i, (i + 1) % n, n + (i + 1) % n, n + i) for i in range(n)]
         self.m.add_solid(v, f + [tuple(reversed(range(n))), tuple(range(n, 2 * n))], mat)
 
+    def poly(self, pts, d, depth, mat):
+        """벽면 위 다각형 [(u, z)] 을 d 에서 바깥으로 depth 만큼 밀어낸 조각 (로고 별 · 화살표 등)"""
+        off = (self.n[0] * depth, self.n[1] * depth, 0.0)
+        self.m.extrude([self.p(u, z, d) for u, z in pts], off, mat)
+
     def text(self, letters, u, z, d, mat, kind=SIGN, name="letters"):
         """letters = (verts, faces, 폭, 높이, 두께). (u, z) 가 글자 중심, d 는 글자 뒷면 위치.
         kind=None 이면 예약하지 않는다 (이미 예약된 간판 · 유리 위에 붙일 때)."""

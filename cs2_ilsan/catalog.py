@@ -8,9 +8,9 @@ ASSETS = {
     "IlsanHoetjip02": (3, 3, "횟집", "동해회센터", 2048),
     "IlsanCrab01": (2, 3, "대게", "대게 · 킹크랩", 2048),
     "IlsanCafe01": (2, 3, "카페", "카페 파도", 2048),
-    "IlsanChicken01": (2, 2, "치킨", "치킨 · 호프", 2048),
+    "IlsanChicken01": (2, 2, "치킨", "교촌치킨", 2048),
     "IlsanGrill01": (2, 2, "조개구이", "조개구이", 1024),
-    "IlsanShop01": (2, 2, "상가", "편의점", 2048),
+    "IlsanShop01": (2, 2, "편의점", "세븐일레븐", 2048),
     "IlsanMixed01": (3, 3, "근린상가", "근린상가", 2048),
     "IlsanMarket01": (4, 3, "시장", "수산물 판매센터", 2048),
     "IlsanMotel01": (3, 4, "숙박", "호텔 일산", 2048),
@@ -33,6 +33,13 @@ ASSETS = {
     "IlsanPine02": (1, 1, "조경", "해송 (굽은 나무)", 1024),
     "IlsanRoundabout": (2, 2, "교통", "회전교차로 중앙섬", 1024),
     "IlsanRoadMarking01": (1, 1, "교통", "CCTV 주차단속", 512),
+    # 실제 브랜드 매장 (brands.py)
+    "IlsanStarbucksDT": (3, 4, "카페", "스타벅스 울산일산비치DT점", 2048),
+    "IlsanTerracePark01": (4, 3, "상가", "테라스파크 A동", 2048),
+    "IlsanTerracePark02": (4, 3, "상가", "테라스파크 C동", 2048),
+    "IlsanHomeplus": (8, 6, "대형마트", "홈플러스 울산동구점", 4096),
+    "IlsanGS25": (2, 2, "편의점", "GS25", 2048),
+    "IlsanCU": (2, 2, "편의점", "CU", 2048),
 }
 
 # CS2 에서 가져올 때의 종류: building(부지 있는 건물) · plaza(광장 · 공원 부지) · prop(부지 없는 소품)
@@ -46,7 +53,7 @@ TYPE.update({n: "prop" for n in ("IlsanBeachRail", "IlsanPine01", "IlsanPine02",
 SEQUENCE = ["IlsanHoetjip01", "IlsanCafe01", "IlsanCrab01", "IlsanGrill01", "IlsanMotel01", "IlsanHoetjip02",
             "IlsanChicken01", "IlsanPension01", "IlsanShop01", "IlsanMixed01", "IlsanHoetjip01", "IlsanMarket01",
             "IlsanVilla01", "IlsanHoetjip03", "IlsanCafe01", "IlsanCrab01", "IlsanChicken01", "IlsanHoetjip02",
-            "IlsanPension01", "IlsanHoetjip03", "IlsanGrill01", "IlsanShop01"]
+            "IlsanPension01", "IlsanHoetjip03", "IlsanGrill01", "IlsanCU"]
 
 # 도로 바다 쪽(백사장 앞) 시설: (에셋, 해안선 길이 비율)
 SEASIDE = [("IlsanToilet01", 0.30), ("IlsanToilet01", 0.72)]
@@ -56,6 +63,6 @@ PLAZA_SEGMENTS = ["IlsanPlaza01", "IlsanPlaza01", "IlsanPlaza01", "IlsanPlazaSta
 
 # 광장 양옆 상가 (광장을 바라본다). 모퉁이 유리 상가 뒤에서 광장 끝 쪽으로 차례로
 PLAZA_SIDES = {
-    "north": ["IlsanHoetjip03", "IlsanYouthStage", "IlsanBlueRoof01", "IlsanMixed01", "IlsanChicken01"],
-    "south": ["IlsanBlueRoof01", "IlsanShop01", "IlsanHoetjip03", "IlsanCrab01", "IlsanGrill01"],
+    "north": ["IlsanTerracePark01", "IlsanTerracePark02", "IlsanYouthStage", "IlsanHoetjip03"],
+    "south": ["IlsanGS25", "IlsanBlueRoof01", "IlsanMixed01", "IlsanCrab01", "IlsanChicken01"],
 }

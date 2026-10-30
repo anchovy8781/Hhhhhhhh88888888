@@ -1,7 +1,7 @@
 {
   "name": "IlsanShop01",
-  "title": "편의점",
-  "kind": "상가",
+  "title": "세븐일레븐",
+  "kind": "편의점",
   "type": "building",
   "lot_cells": [
     2,
@@ -16,11 +16,11 @@
     12.0
   ],
   "height_m": 12.95,
-  "lod0_tris": 10047,
+  "lod0_tris": 8830,
   "openings": 20,
   "texture": 2048,
   "lod_tris": [
-    6387,
+    6058,
     1612
   ]
 }

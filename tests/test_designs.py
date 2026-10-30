@@ -83,6 +83,23 @@ class DesignTest(unittest.TestCase):
         self.assertEqual(len(rooms), 1)
         self.assertGreater(rooms[0].d1, 0.5)                  # 세로 핀이 개구부 예약 깊이에 포함
 
+    def test_real_brand_details(self):
+        """실제 브랜드 매장: 드라이브스루 픽업 창은 운전석(왼쪽) 쪽 면, 주문판은 뒤, 테라스파크는 층마다 3 m 물러남,
+        모퉁이 상가 1층은 실제 편의점 브랜드"""
+        sb, _ = self.built["IlsanStarbucksDT"]
+        pickup = [s for s in sb.slots if s.name == "pickup"]
+        self.assertEqual([s.side for s in pickup], ["left"])
+        self.assertTrue(any(s.name == "menu_board" and s.side == "back" for s in sb.slots))
+        for name in ("IlsanTerracePark01", "IlsanTerracePark02"):
+            b, _ = self.built[name]
+            fronts = [b.y0] + [b.vols[k][2] for k in ("f2", "f3", "f4")]
+            self.assertEqual([round(q - p, 3) for p, q in zip(fronts, fronts[1:])], [3.0, 3.0, 3.0], name)
+        signs = {s.name for n in ("IlsanCornerTower01", "IlsanCornerTower02") for s in self.built[n][0].slots}
+        self.assertTrue({"sign:CU", "sign:GS25", "sign:MEGA COFFEE", "sign:EDIYA COFFEE"} <= signs)
+        hp, _ = self.built["IlsanHomeplus"]
+        self.assertTrue(any(s.name == "atrium" for s in hp.slots))
+        self.assertGreater(hp.top, 20)
+
     def test_curtain_wall_has_no_conflicts_with_signs(self):
         """모퉁이 상가: 층마다 간판 띠와 유리가 번갈아 놓이고 서로 겹치지 않는다"""
         for name in ("IlsanCornerTower01", "IlsanCornerTower02"):

@@ -209,8 +209,13 @@ def draw_overlay(h, st, dem, lat0, lon0, items, extras=None):
               "근린상가": (60, 160, 255, 255), "시장": (40, 90, 255, 255), "숙박": (200, 80, 220, 255),
               "펜션": (150, 220, 255, 255), "주거": (200, 200, 200, 255), "화장실": (0, 255, 160, 255),
               "호텔": (255, 120, 255, 255), "상업빌딩": (0, 220, 255, 255), "청년공간": (255, 140, 0, 255),
-              "광장": (230, 230, 230, 255), "조형물": (255, 255, 255, 255), "다리": (120, 160, 255, 255)}
+              "광장": (230, 230, 230, 255), "조형물": (255, 255, 255, 255), "다리": (120, 160, 255, 255),
+              "편의점": (120, 255, 120, 255), "대형마트": (255, 60, 60, 255)}
     extras = extras or {}
+    if "main_road_xz" in extras:                                   # 방어진순환도로 (노랑 굵은 선)
+        a, b = (to_px(*p) for p in extras["main_road_xz"])
+        for o in (-2, -1, 0, 1, 2):
+            line((a[0], a[1] + o), (b[0], b[1] + o), (255, 200, 0, 255))
     if "stream_xz" in extras:
         a, b = (to_px(*p) for p in extras["stream_xz"])
         for o in (-1, 0, 1):
@@ -249,7 +254,7 @@ def draw_overlay(h, st, dem, lat0, lon0, items, extras=None):
 
 
 SIDE_NAMES = {"land": "해변 도로 상가 줄", "plaza": "청년광장", "sea": "도로 바다 쪽", "beach": "백사장",
-              "center": "도로 위", "prop": "소품"}
+              "main": "방어진순환도로 건너편", "center": "도로 위", "prop": "소품"}
 
 
 def write_placement_md(path, items):
@@ -307,10 +312,17 @@ def main():
     ground = ground_sampler(play.copy())   # 지면 높이는 하천을 파기 전 지형 (다리 · 도로는 물길 위로 지나간다)
     placement.to_game(items, st, dem, to_xz, ground)
     stream_xz = [to_xz(*S.Street.latlon(dem, *p)) for p in lay.stream_line]
+    road_line, road_w = placement.main_road(lay)
+    main_xz = [to_xz(*S.Street.latlon(dem, *p)) for p in road_line]
+    main_pts = []
+    for t in np.linspace(0, 1, 60):                                # 방어진순환도로 중심선 (지면 높이 포함)
+        gx = main_xz[0][0] + (main_xz[1][0] - main_xz[0][0]) * t
+        gz = main_xz[0][1] + (main_xz[1][1] - main_xz[0][1]) * t
+        main_pts.append({"x": round(gx, 1), "z": round(gz, 1), "ground_m": round(ground(gx, gz), 2)})
     carve_stream(play, stream_xz)
     pngio.write_gray16(os.path.join(args.out, "Ilsan_Heightmap.png"), to_u16(play))
     pngio.write_rgb8(os.path.join(args.out, "Ilsan_Overlay.png"),
-                     draw_overlay(play, st, dem, lat0, lon0, items, {"stream_xz": stream_xz}))
+                     draw_overlay(play, st, dem, lat0, lon0, items, {"stream_xz": stream_xz, "main_road_xz": main_xz}))
     with open(os.path.join(args.out, "Ilsan_Placement.json"), "w", encoding="utf-8") as f:
         json.dump([{k: v for k, v in it.items() if k in KEEP} for it in items], f, ensure_ascii=False, indent=2)
 
@@ -335,6 +347,7 @@ def main():
                   "width_m": 2 * placement.PLAZA_HALF, "length_m": 128.0},
         "roundabout_xz": [round(c, 1) for c in to_xz(*S.Street.latlon(dem, *lay.road_center))],
         "stream_xz": [[round(c, 1) for c in p] for p in stream_xz],
+        "main_road": {"name": "방어진순환도로", "width_m": road_w, "centerline_game_xz": main_pts},
         "note": "게임 좌표: 맵 중심 원점, x=동쪽, z=북쪽. ground_m 은 그 위치 하이트맵 지형의 게임 높이(해수면 40 m). "
                 "하천(stream_xz)은 하이트맵에 물길로 파여 있고, 해변 도로는 그 위를 다리로 건넌다.",
     }

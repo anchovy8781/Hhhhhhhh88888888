@@ -276,6 +276,12 @@ def corner_tower(plaza, title, ground, tenants, vsign, seed, text_fn=None):
     })
     for k, (_, col) in enumerate(tenants):
         b.mats[f"sign_t{k}"] = sign(col, 0.7)
+    store, cafe = ground                       # (글자, 보조 문구, 판 색, 글자 색) — 1층 편의점 · 모퉁이 카페 브랜드
+    for key, (_, _, board, letter) in (("1", store), ("2", cafe)):
+        b.mats["sign_ground" + key] = sign(board, 0.6)
+        b.mats["letters_ground" + key] = {"color": letter, "rough": 0.35,
+                                          "emit": tuple(min(1.0, c * 1.25 + 0.02) for c in letter),
+                                          "emit_strength": 2.2}
     other = "right" if plaza == "left" else "left"
     g, u = 4.6, 3.6
     floors = [g + k * u for k in range(6)]
@@ -297,9 +303,12 @@ def corner_tower(plaza, title, ground, tenants, vsign, seed, text_fn=None):
     f.storefront(a0, a1, 0.03, 3.4, bay=1.3, doors=[(fu(18.8), 1.6)], name="store")
     a0, a1 = span_s(0.12, 12.0)
     p.storefront(a0, a1, 0.03, 3.4, bay=1.4, doors=[(su(9.5), 1.6)], name="corner_cafe_s", mat_depth=0.8)
-    b.sign_band("front", *span_f(0.17, 8.4), 3.55, 4.45, ground[1], mat="sign_ground2")
-    b.sign_band("front", *span_f(11.6, 20.85), 3.55, 4.45, ground[0], "24시간 · 택배 · ATM", mat="sign_ground1")
-    b.sign_band(plaza, *span_s(0.17, 12.0), 3.55, 4.45, ground[1], "OCEAN VIEW · DESSERT", mat="sign_ground2")
+    b.sign_band("front", *span_f(0.17, 8.4), 3.55, 4.45, cafe[0], cafe[1], mat="sign_ground2",
+                letters="letters_ground2")
+    b.sign_band("front", *span_f(11.6, 20.85), 3.55, 4.45, store[0], store[1], mat="sign_ground1",
+                letters="letters_ground1")
+    b.sign_band(plaza, *span_s(0.17, 12.0), 3.55, 4.45, cafe[0], cafe[1], mat="sign_ground2",
+                letters="letters_ground2")
     b.lightbox("front", fu(10.0), 3.0, 2.0, 0.42, title, mat="sign_roof")
     # 2~7층: 층마다 업종 간판 띠 + 한 층 높이 유리 (정면 · 광장 면)
     for k, (zf, (name, _)) in enumerate(zip(floors, tenants)):
@@ -371,12 +380,19 @@ def corner_tower(plaza, title, ground, tenants, vsign, seed, text_fn=None):
     return b, title
 
 
+# 1층 실제 브랜드: (글자, 보조 문구, 간판 판 색, 글자 색)
+CU_SIGN = ("CU", "24시간 · 택배 · ATM", (0.95, 0.95, 0.93), (0.13, 0.03, 0.27))
+GS25_SIGN = ("GS25", "24시간 · 택배 · ATM", (0.95, 0.95, 0.93), (0.0, 0.17, 0.62))
+MEGA_SIGN = ("MEGA COFFEE", "메가MGC커피", (0.95, 0.80, 0.02), (0.08, 0.06, 0.05))
+EDIYA_SIGN = ("EDIYA COFFEE", "이디야커피", (0.02, 0.06, 0.22), (0.98, 0.98, 0.95))
+
+
 def corner01(text_fn=None):
-    return corner_tower("left", "일산스퀘어", ("편의점", "COFFEE BAY"), TENANTS_A, "노래방PC방", 41, text_fn)
+    return corner_tower("left", "일산스퀘어", (CU_SIGN, MEGA_SIGN), TENANTS_A, "노래방PC방", 41, text_fn)
 
 
 def corner02(text_fn=None):
-    return corner_tower("right", "비치타워", ("편의점", "CAFE 해변"), TENANTS_B, "치과학원", 42, text_fn)
+    return corner_tower("right", "비치타워", (GS25_SIGN, EDIYA_SIGN), TENANTS_B, "치과학원", 42, text_fn)
 
 
 # ---------------------------------------------------------------------------
