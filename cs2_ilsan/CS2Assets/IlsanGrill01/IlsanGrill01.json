@@ -2,6 +2,7 @@
   "name": "IlsanGrill01",
   "title": "조개구이",
   "kind": "조개구이",
+  "type": "building",
   "lot_cells": [
     2,
     2

@@ -2,6 +2,7 @@
   "name": "IlsanCrab01",
   "title": "대게 · 킹크랩",
   "kind": "대게",
+  "type": "building",
   "lot_cells": [
     2,
     3

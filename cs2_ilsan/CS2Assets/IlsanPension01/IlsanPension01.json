@@ -2,6 +2,7 @@
   "name": "IlsanPension01",
   "title": "바다펜션",
   "kind": "펜션",
+  "type": "building",
   "lot_cells": [
     2,
     3

@@ -2,6 +2,7 @@
   "name": "IlsanVilla01",
   "title": "해송빌라",
   "kind": "주거",
+  "type": "building",
   "lot_cells": [
     2,
     3

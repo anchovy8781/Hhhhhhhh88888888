@@ -2,6 +2,7 @@
   "name": "IlsanHoetjip02",
   "title": "동해회센터",
   "kind": "횟집",
+  "type": "building",
   "lot_cells": [
     3,
     3

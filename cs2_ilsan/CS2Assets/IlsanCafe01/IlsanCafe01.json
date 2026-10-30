@@ -2,6 +2,7 @@
   "name": "IlsanCafe01",
   "title": "카페 파도",
   "kind": "카페",
+  "type": "building",
   "lot_cells": [
     2,
     3

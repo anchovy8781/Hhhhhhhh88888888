@@ -2,6 +2,7 @@
   "name": "IlsanMotel01",
   "title": "호텔 일산",
   "kind": "숙박",
+  "type": "building",
   "lot_cells": [
     3,
     4

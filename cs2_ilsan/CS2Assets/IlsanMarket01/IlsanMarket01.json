@@ -2,6 +2,7 @@
   "name": "IlsanMarket01",
   "title": "수산물 판매센터",
   "kind": "시장",
+  "type": "building",
   "lot_cells": [
     4,
     3

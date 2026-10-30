@@ -2,6 +2,7 @@
   "name": "IlsanMixed01",
   "title": "근린상가",
   "kind": "근린상가",
+  "type": "building",
   "lot_cells": [
     3,
     3

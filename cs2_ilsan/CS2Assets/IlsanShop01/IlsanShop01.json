@@ -2,6 +2,7 @@
   "name": "IlsanShop01",
   "title": "편의점",
   "kind": "상가",
+  "type": "building",
   "lot_cells": [
     2,
     2

@@ -3,6 +3,7 @@
     "name": "IlsanHoetjip01",
     "title": "바다횟집",
     "kind": "횟집",
+    "type": "building",
     "lot_cells": [
       2,
       3
@@ -28,6 +29,7 @@
     "name": "IlsanHoetjip02",
     "title": "동해회센터",
     "kind": "횟집",
+    "type": "building",
     "lot_cells": [
       3,
       3
@@ -53,6 +55,7 @@
     "name": "IlsanCafe01",
     "title": "카페 파도",
     "kind": "카페",
+    "type": "building",
     "lot_cells": [
       2,
       3
@@ -78,6 +81,7 @@
     "name": "IlsanMotel01",
     "title": "호텔 일산",
     "kind": "숙박",
+    "type": "building",
     "lot_cells": [
       3,
       4
@@ -103,6 +107,7 @@
     "name": "IlsanShop01",
     "title": "편의점",
     "kind": "상가",
+    "type": "building",
     "lot_cells": [
       2,
       2
@@ -128,6 +133,7 @@
     "name": "IlsanGrill01",
     "title": "조개구이",
     "kind": "조개구이",
+    "type": "building",
     "lot_cells": [
       2,
       2
@@ -153,6 +159,7 @@
     "name": "IlsanCrab01",
     "title": "대게 · 킹크랩",
     "kind": "대게",
+    "type": "building",
     "lot_cells": [
       2,
       3
@@ -178,6 +185,7 @@
     "name": "IlsanMixed01",
     "title": "근린상가",
     "kind": "근린상가",
+    "type": "building",
     "lot_cells": [
       3,
       3
@@ -203,6 +211,7 @@
     "name": "IlsanVilla01",
     "title": "해송빌라",
     "kind": "주거",
+    "type": "building",
     "lot_cells": [
       2,
       3
@@ -228,6 +237,7 @@
     "name": "IlsanPension01",
     "title": "바다펜션",
     "kind": "펜션",
+    "type": "building",
     "lot_cells": [
       2,
       3
@@ -253,6 +263,7 @@
     "name": "IlsanMarket01",
     "title": "수산물 판매센터",
     "kind": "시장",
+    "type": "building",
     "lot_cells": [
       4,
       3
@@ -278,6 +289,7 @@
     "name": "IlsanChicken01",
     "title": "치킨 · 호프",
     "kind": "치킨",
+    "type": "building",
     "lot_cells": [
       2,
       2
@@ -303,6 +315,7 @@
     "name": "IlsanToilet01",
     "title": "해변 화장실",
     "kind": "화장실",
+    "type": "building",
     "lot_cells": [
       2,
       2
@@ -322,6 +335,396 @@
     "lod_tris": [
       2354,
       364
+    ]
+  },
+  {
+    "name": "IlsanTanibayHotel",
+    "title": "타니베이호텔",
+    "kind": "호텔",
+    "type": "building",
+    "lot_cells": [
+      7,
+      4
+    ],
+    "lot_m": [
+      56.0,
+      32.0
+    ],
+    "footprint_m": [
+      50.0,
+      24.0
+    ],
+    "height_m": 79.35,
+    "lod0_tris": 64788,
+    "openings": 242,
+    "texture": 4096,
+    "lod_tris": [
+      39690,
+      13247
+    ]
+  },
+  {
+    "name": "IlsanCornerTower01",
+    "title": "일산스퀘어",
+    "kind": "상업빌딩",
+    "type": "building",
+    "lot_cells": [
+      3,
+      3
+    ],
+    "lot_m": [
+      24.0,
+      24.0
+    ],
+    "footprint_m": [
+      22.0,
+      20.0
+    ],
+    "height_m": 31.35,
+    "lod0_tris": 77158,
+    "openings": 63,
+    "texture": 2048,
+    "lod_tris": [
+      30342,
+      3284
+    ]
+  },
+  {
+    "name": "IlsanCornerTower02",
+    "title": "비치타워",
+    "kind": "상업빌딩",
+    "type": "building",
+    "lot_cells": [
+      3,
+      3
+    ],
+    "lot_m": [
+      24.0,
+      24.0
+    ],
+    "footprint_m": [
+      22.0,
+      20.0
+    ],
+    "height_m": 31.35,
+    "lod0_tris": 74573,
+    "openings": 63,
+    "texture": 2048,
+    "lod_tris": [
+      29648,
+      3284
+    ]
+  },
+  {
+    "name": "IlsanYouthStage",
+    "title": "청년스테이지ON",
+    "kind": "청년공간",
+    "type": "building",
+    "lot_cells": [
+      2,
+      3
+    ],
+    "lot_m": [
+      16.0,
+      24.0
+    ],
+    "footprint_m": [
+      14.0,
+      17.0
+    ],
+    "height_m": 22.42,
+    "lod0_tris": 13607,
+    "openings": 42,
+    "texture": 2048,
+    "lod_tris": [
+      9872,
+      3184
+    ]
+  },
+  {
+    "name": "IlsanHoetjip03",
+    "title": "갈매기횟집",
+    "kind": "횟집",
+    "type": "building",
+    "lot_cells": [
+      2,
+      2
+    ],
+    "lot_m": [
+      16.0,
+      16.0
+    ],
+    "footprint_m": [
+      13.0,
+      10.0
+    ],
+    "height_m": 9.1,
+    "lod0_tris": 22697,
+    "openings": 13,
+    "texture": 2048,
+    "lod_tris": [
+      9025,
+      1466
+    ]
+  },
+  {
+    "name": "IlsanBlueRoof01",
+    "title": "해변슈퍼",
+    "kind": "상가",
+    "type": "building",
+    "lot_cells": [
+      2,
+      2
+    ],
+    "lot_m": [
+      16.0,
+      16.0
+    ],
+    "footprint_m": [
+      12.0,
+      9.5
+    ],
+    "height_m": 9.23,
+    "lod0_tris": 5241,
+    "openings": 12,
+    "texture": 2048,
+    "lod_tris": [
+      3172,
+      930
+    ]
+  },
+  {
+    "name": "IlsanPlaza01",
+    "title": "일산청년광장",
+    "kind": "광장",
+    "type": "plaza",
+    "lot_cells": [
+      3,
+      4
+    ],
+    "lot_m": [
+      24.0,
+      32.0
+    ],
+    "footprint_m": [
+      24.0,
+      32.0
+    ],
+    "height_m": 7.22,
+    "lod0_tris": 5642,
+    "openings": 0,
+    "texture": 2048,
+    "lod_tris": [
+      4866,
+      4098
+    ]
+  },
+  {
+    "name": "IlsanPlazaStage",
+    "title": "청년광장 버스킹 무대",
+    "kind": "광장",
+    "type": "plaza",
+    "lot_cells": [
+      3,
+      4
+    ],
+    "lot_m": [
+      24.0,
+      32.0
+    ],
+    "footprint_m": [
+      24.0,
+      32.0
+    ],
+    "height_m": 8.9,
+    "lod0_tris": 17394,
+    "openings": 0,
+    "texture": 2048,
+    "lod_tris": [
+      8862,
+      4970
+    ]
+  },
+  {
+    "name": "IlsanBeachLandmark",
+    "title": "일산해수욕장 삼각 조형물",
+    "kind": "조형물",
+    "type": "plaza",
+    "lot_cells": [
+      2,
+      2
+    ],
+    "lot_m": [
+      16.0,
+      16.0
+    ],
+    "footprint_m": [
+      16.0,
+      16.0
+    ],
+    "height_m": 9.65,
+    "lod0_tris": 6496,
+    "openings": 0,
+    "texture": 1024,
+    "lod_tris": [
+      1996,
+      80
+    ]
+  },
+  {
+    "name": "IlsanStreamBridge",
+    "title": "하천 하구 보행교",
+    "kind": "다리",
+    "type": "plaza",
+    "lot_cells": [
+      2,
+      2
+    ],
+    "lot_m": [
+      16.0,
+      16.0
+    ],
+    "footprint_m": [
+      16.0,
+      16.0
+    ],
+    "height_m": 2.13,
+    "lod0_tris": 2062,
+    "openings": 0,
+    "texture": 1024,
+    "lod_tris": [
+      1802,
+      1218
+    ]
+  },
+  {
+    "name": "IlsanBeachRail",
+    "title": "해변 난간",
+    "kind": "소품",
+    "type": "prop",
+    "lot_cells": [
+      1,
+      1
+    ],
+    "lot_m": [
+      8.0,
+      8.0
+    ],
+    "footprint_m": [
+      8.0,
+      8.0
+    ],
+    "height_m": 1.14,
+    "lod0_tris": 792,
+    "openings": 0,
+    "texture": 512,
+    "lod_tris": [
+      792,
+      792
+    ]
+  },
+  {
+    "name": "IlsanPine01",
+    "title": "해송 (큰 나무)",
+    "kind": "조경",
+    "type": "prop",
+    "lot_cells": [
+      1,
+      1
+    ],
+    "lot_m": [
+      8.0,
+      8.0
+    ],
+    "footprint_m": [
+      8.0,
+      8.0
+    ],
+    "height_m": 8.46,
+    "lod0_tris": 2172,
+    "openings": 0,
+    "texture": 1024,
+    "lod_tris": [
+      2172,
+      2172
+    ]
+  },
+  {
+    "name": "IlsanPine02",
+    "title": "해송 (굽은 나무)",
+    "kind": "조경",
+    "type": "prop",
+    "lot_cells": [
+      1,
+      1
+    ],
+    "lot_m": [
+      8.0,
+      8.0
+    ],
+    "footprint_m": [
+      8.0,
+      8.0
+    ],
+    "height_m": 7.02,
+    "lod0_tris": 2172,
+    "openings": 0,
+    "texture": 1024,
+    "lod_tris": [
+      2172,
+      2172
+    ]
+  },
+  {
+    "name": "IlsanRoundabout",
+    "title": "회전교차로 중앙섬",
+    "kind": "교통",
+    "type": "prop",
+    "lot_cells": [
+      2,
+      2
+    ],
+    "lot_m": [
+      16.0,
+      16.0
+    ],
+    "footprint_m": [
+      16.0,
+      16.0
+    ],
+    "height_m": 5.34,
+    "lod0_tris": 2824,
+    "openings": 0,
+    "texture": 1024,
+    "lod_tris": [
+      2788,
+      2192
+    ]
+  },
+  {
+    "name": "IlsanRoadMarking01",
+    "title": "노면 글자 CCTV 주차단속",
+    "kind": "교통",
+    "type": "prop",
+    "lot_cells": [
+      1,
+      1
+    ],
+    "lot_m": [
+      8.0,
+      8.0
+    ],
+    "footprint_m": [
+      8.0,
+      8.0
+    ],
+    "height_m": 0.01,
+    "lod0_tris": 3316,
+    "openings": 0,
+    "texture": 512,
+    "lod_tris": [
+      3226,
+      3226
     ]
   }
 ]

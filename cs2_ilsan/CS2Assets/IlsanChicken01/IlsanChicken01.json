@@ -2,6 +2,7 @@
   "name": "IlsanChicken01",
   "title": "치킨 · 호프",
   "kind": "치킨",
+  "type": "building",
   "lot_cells": [
     2,
     2

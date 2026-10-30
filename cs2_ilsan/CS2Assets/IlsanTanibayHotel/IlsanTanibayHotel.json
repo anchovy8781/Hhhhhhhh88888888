@@ -1,0 +1,26 @@
+{
+  "name": "IlsanTanibayHotel",
+  "title": "타니베이호텔",
+  "kind": "호텔",
+  "type": "building",
+  "lot_cells": [
+    7,
+    4
+  ],
+  "lot_m": [
+    56.0,
+    32.0
+  ],
+  "footprint_m": [
+    50.0,
+    24.0
+  ],
+  "height_m": 79.35,
+  "lod0_tris": 64788,
+  "openings": 242,
+  "texture": 4096,
+  "lod_tris": [
+    39690,
+    13247
+  ]
+}

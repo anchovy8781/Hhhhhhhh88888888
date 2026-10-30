@@ -2,6 +2,7 @@
   "name": "IlsanToilet01",
   "title": "해변 화장실",
   "kind": "화장실",
+  "type": "building",
   "lot_cells": [
     2,
     2
