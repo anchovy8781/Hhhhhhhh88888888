@@ -1,0 +1,26 @@
+{
+  "name": "IlsanRoundabout",
+  "title": "회전교차로 중앙섬",
+  "kind": "교통",
+  "type": "prop",
+  "lot_cells": [
+    2,
+    2
+  ],
+  "lot_m": [
+    16.0,
+    16.0
+  ],
+  "footprint_m": [
+    16.0,
+    16.0
+  ],
+  "height_m": 5.34,
+  "lod0_tris": 2824,
+  "openings": 0,
+  "texture": 1024,
+  "lod_tris": [
+    2788,
+    2192
+  ]
+}
