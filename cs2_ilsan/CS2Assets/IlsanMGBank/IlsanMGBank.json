@@ -1,0 +1,26 @@
+{
+  "name": "IlsanMGBank",
+  "title": "일산새마을금고",
+  "kind": "금융",
+  "type": "building",
+  "lot_cells": [
+    3,
+    2
+  ],
+  "lot_m": [
+    24.0,
+    16.0
+  ],
+  "footprint_m": [
+    20.0,
+    11.0
+  ],
+  "height_m": 14.6,
+  "lod0_tris": 27064,
+  "openings": 21,
+  "texture": 2048,
+  "lod_tris": [
+    11551,
+    1690
+  ]
+}
