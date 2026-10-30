@@ -1,0 +1,26 @@
+{
+  "name": "IlsanCornerTower02",
+  "title": "비치타워",
+  "kind": "상업빌딩",
+  "type": "building",
+  "lot_cells": [
+    3,
+    3
+  ],
+  "lot_m": [
+    24.0,
+    24.0
+  ],
+  "footprint_m": [
+    22.0,
+    20.0
+  ],
+  "height_m": 31.35,
+  "lod0_tris": 74573,
+  "openings": 63,
+  "texture": 2048,
+  "lod_tris": [
+    29648,
+    3284
+  ]
+}
