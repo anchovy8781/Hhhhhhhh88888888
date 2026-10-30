@@ -1,0 +1,26 @@
+{
+  "name": "IlsanHomeplus",
+  "title": "홈플러스 울산동구점",
+  "kind": "대형마트",
+  "type": "building",
+  "lot_cells": [
+    8,
+    6
+  ],
+  "lot_m": [
+    64.0,
+    48.0
+  ],
+  "footprint_m": [
+    56.0,
+    38.0
+  ],
+  "height_m": 24.38,
+  "lod0_tris": 52270,
+  "openings": 20,
+  "texture": 4096,
+  "lod_tris": [
+    25743,
+    12330
+  ]
+}

@@ -105,8 +105,8 @@
   },
   {
     "name": "IlsanShop01",
-    "title": "편의점",
-    "kind": "상가",
+    "title": "세븐일레븐",
+    "kind": "편의점",
     "type": "building",
     "lot_cells": [
       2,
@@ -121,11 +121,11 @@
       12.0
     ],
     "height_m": 12.95,
-    "lod0_tris": 10047,
+    "lod0_tris": 8830,
     "openings": 20,
     "texture": 2048,
     "lod_tris": [
-      6387,
+      6058,
       1612
     ]
   },
@@ -199,11 +199,11 @@
       16.0
     ],
     "height_m": 23.15,
-    "lod0_tris": 36331,
+    "lod0_tris": 35373,
     "openings": 47,
     "texture": 2048,
     "lod_tris": [
-      16353,
+      16064,
       3462
     ]
   },
@@ -287,7 +287,7 @@
   },
   {
     "name": "IlsanChicken01",
-    "title": "치킨 · 호프",
+    "title": "교촌치킨",
     "kind": "치킨",
     "type": "building",
     "lot_cells": [
@@ -303,11 +303,11 @@
       10.5
     ],
     "height_m": 10.25,
-    "lod0_tris": 15396,
+    "lod0_tris": 15702,
     "openings": 13,
     "texture": 2048,
     "lod_tris": [
-      6540,
+      6593,
       1370
     ]
   },
@@ -381,11 +381,11 @@
       20.0
     ],
     "height_m": 31.35,
-    "lod0_tris": 77158,
+    "lod0_tris": 77977,
     "openings": 63,
     "texture": 2048,
     "lod_tris": [
-      30342,
+      30554,
       3284
     ]
   },
@@ -407,11 +407,11 @@
       20.0
     ],
     "height_m": 31.35,
-    "lod0_tris": 74573,
+    "lod0_tris": 74854,
     "openings": 63,
     "texture": 2048,
     "lod_tris": [
-      29648,
+      29683,
       3284
     ]
   },
@@ -725,6 +725,162 @@
     "lod_tris": [
       3226,
       3226
+    ]
+  },
+  {
+    "name": "IlsanStarbucksDT",
+    "title": "스타벅스 울산일산비치DT점",
+    "kind": "카페",
+    "type": "building",
+    "lot_cells": [
+      3,
+      4
+    ],
+    "lot_m": [
+      24.0,
+      32.0
+    ],
+    "footprint_m": [
+      15.0,
+      15.0
+    ],
+    "height_m": 11.75,
+    "lod0_tris": 36137,
+    "openings": 12,
+    "texture": 2048,
+    "lod_tris": [
+      25330,
+      19409
+    ]
+  },
+  {
+    "name": "IlsanTerracePark01",
+    "title": "테라스파크 A동",
+    "kind": "상가",
+    "type": "building",
+    "lot_cells": [
+      4,
+      3
+    ],
+    "lot_m": [
+      32.0,
+      24.0
+    ],
+    "footprint_m": [
+      30.0,
+      20.0
+    ],
+    "height_m": 19.1,
+    "lod0_tris": 79073,
+    "openings": 53,
+    "texture": 2048,
+    "lod_tris": [
+      41573,
+      22069
+    ]
+  },
+  {
+    "name": "IlsanTerracePark02",
+    "title": "테라스파크 C동",
+    "kind": "상가",
+    "type": "building",
+    "lot_cells": [
+      4,
+      3
+    ],
+    "lot_m": [
+      32.0,
+      24.0
+    ],
+    "footprint_m": [
+      30.0,
+      20.0
+    ],
+    "height_m": 19.1,
+    "lod0_tris": 68543,
+    "openings": 54,
+    "texture": 2048,
+    "lod_tris": [
+      40169,
+      22668
+    ]
+  },
+  {
+    "name": "IlsanHomeplus",
+    "title": "홈플러스 울산동구점",
+    "kind": "대형마트",
+    "type": "building",
+    "lot_cells": [
+      8,
+      6
+    ],
+    "lot_m": [
+      64.0,
+      48.0
+    ],
+    "footprint_m": [
+      56.0,
+      38.0
+    ],
+    "height_m": 24.38,
+    "lod0_tris": 52270,
+    "openings": 20,
+    "texture": 4096,
+    "lod_tris": [
+      25743,
+      12330
+    ]
+  },
+  {
+    "name": "IlsanGS25",
+    "title": "GS25",
+    "kind": "편의점",
+    "type": "building",
+    "lot_cells": [
+      2,
+      2
+    ],
+    "lot_m": [
+      16.0,
+      16.0
+    ],
+    "footprint_m": [
+      12.0,
+      9.0
+    ],
+    "height_m": 9.1,
+    "lod0_tris": 10424,
+    "openings": 13,
+    "texture": 2048,
+    "lod_tris": [
+      6657,
+      3131
+    ]
+  },
+  {
+    "name": "IlsanCU",
+    "title": "CU",
+    "kind": "편의점",
+    "type": "building",
+    "lot_cells": [
+      2,
+      2
+    ],
+    "lot_m": [
+      16.0,
+      16.0
+    ],
+    "footprint_m": [
+      12.5,
+      9.5
+    ],
+    "height_m": 13.15,
+    "lod0_tris": 13800,
+    "openings": 20,
+    "texture": 2048,
+    "lod_tris": [
+      8035,
+      2493
     ]
   }
 ]
