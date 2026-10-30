@@ -1,0 +1,26 @@
+{
+  "name": "IlsanSikdang153",
+  "title": "식당153 울산본점",
+  "kind": "식당",
+  "type": "building",
+  "lot_cells": [
+    2,
+    3
+  ],
+  "lot_m": [
+    16.0,
+    24.0
+  ],
+  "footprint_m": [
+    14.0,
+    14.0
+  ],
+  "height_m": 11.45,
+  "lod0_tris": 18119,
+  "openings": 13,
+  "texture": 2048,
+  "lod_tris": [
+    8311,
+    1268
+  ]
+}
