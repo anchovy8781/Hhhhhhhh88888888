@@ -1,0 +1,26 @@
+{
+  "name": "IlsanGasStation",
+  "title": "GS칼텍스 주유소",
+  "kind": "주유소",
+  "type": "building",
+  "lot_cells": [
+    5,
+    4
+  ],
+  "lot_m": [
+    40.0,
+    32.0
+  ],
+  "footprint_m": [
+    16.0,
+    9.0
+  ],
+  "height_m": 7.8,
+  "lod0_tris": 59404,
+  "openings": 5,
+  "texture": 4096,
+  "lod_tris": [
+    20590,
+    4586
+  ]
+}
