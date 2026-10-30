@@ -136,9 +136,9 @@
 위 그림은 `preview_layout.py` 가 **하이트맵 + 배치표 + 내보낸 FBX 만으로** 다시 조립한 장면입니다
 (도로 · 노란 중앙선 · 회전교차로 고리 · 하천 물은 미리보기용으로 함께 그립니다).
 
-| 거리에서 | 밤 (Emissive 맵만으로 점등) |
+| 거리에서 (사진 ② 구도) | 밤 (Emissive 맵만으로 점등) |
 |---|---|
-| ![거리](docs/layout_street.jpg) | ![밤](docs/layout_night.jpg) |
+| ![거리](docs/real_02.jpg) | ![밤](docs/layout_night.jpg) |
 
 ## 3. 에셋 가져오기
 
