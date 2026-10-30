@@ -534,7 +534,7 @@ def mg_bank(text_fn=None):
     b.lightbox("front", 17.05, 3.6, 4.6, 0.6, "365 자동화코너", mat="mg_blue", letters="letters_mgw")
     f.disc(1.0, 3.95, 0.3, 0.3, 0.04, "mg_orange", n=20)                   # 로고 점 (MG 주황)
     for zf in (g, g + u):
-        f.window(10.0, zf + 0.9, 17.0, 1.6, style="fixed", lit=b.chance(0.6), name="ribbon")
+        f.curtain(1.5, 18.5, zf + 0.9, zf + 2.5, 1.6, 1.42, lit=0.6, rng=b.rng, name="ribbon")   # 띠창 (창살 12칸)
         f.box(0.0, 20.0, zf + 0.05, zf + 0.25, 0.0, 0.1, "mg_blue")
         f.reserve(FIXTURE, 0.0, 20.0, zf + 0.05, zf + 0.25, 0.0, 0.1, "blue_band")
     for k, fu in enumerate((1.6, 3.2, 4.8)):                               # 깃대 3 + 깃발
@@ -585,7 +585,9 @@ def sikdang153(text_fn=None):
     b = Building((2, 3), 14.0, 14.0, setback=4.5, seed=79, text_fn=text_fn)    # y -7.5..6.5
     b.mats.update({
         "wall": render((0.93, 0.92, 0.90), grime=0.1), "wall_side": render((0.90, 0.89, 0.87), grime=0.15),
-        "wood_cladding": WOOD_LOUVER, "letters_153": glow((0.08, 0.20, 0.40), 1.2),
+        "wood_cladding": {"color": (0.44, 0.27, 0.14), "color2": (0.34, 0.20, 0.10), "pattern": "stripes",   # 세로 판재
+                          "scale": 0.14, "rough": 0.6},
+        "letters_153": glow((0.08, 0.20, 0.40), 1.2),
         "letters_153s": glow((0.75, 0.25, 0.05), 1.5), "sign": sign((0.92, 0.88, 0.80), 0.3),
         "bench_wood": WOOD_LOUVER, "clam": {"color": (0.75, 0.70, 0.62), "color2": (0.45, 0.40, 0.35),
                                             "pattern": "noise", "scale": 20.0, "rough": 0.6, "bump": 0.4},
