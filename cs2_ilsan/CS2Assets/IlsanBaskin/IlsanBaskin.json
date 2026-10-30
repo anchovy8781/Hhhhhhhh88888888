@@ -1,0 +1,26 @@
+{
+  "name": "IlsanBaskin",
+  "title": "배스킨라빈스",
+  "kind": "디저트",
+  "type": "building",
+  "lot_cells": [
+    2,
+    2
+  ],
+  "lot_m": [
+    16.0,
+    16.0
+  ],
+  "footprint_m": [
+    12.0,
+    9.0
+  ],
+  "height_m": 9.4,
+  "lod0_tris": 28236,
+  "openings": 13,
+  "texture": 2048,
+  "lod_tris": [
+    7959,
+    2130
+  ]
+}
