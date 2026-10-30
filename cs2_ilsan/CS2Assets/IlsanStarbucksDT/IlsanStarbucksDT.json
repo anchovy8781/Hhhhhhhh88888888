@@ -1,0 +1,26 @@
+{
+  "name": "IlsanStarbucksDT",
+  "title": "스타벅스 울산일산비치DT점",
+  "kind": "카페",
+  "type": "building",
+  "lot_cells": [
+    3,
+    4
+  ],
+  "lot_m": [
+    24.0,
+    32.0
+  ],
+  "footprint_m": [
+    15.0,
+    15.0
+  ],
+  "height_m": 11.75,
+  "lod0_tris": 36137,
+  "openings": 12,
+  "texture": 2048,
+  "lod_tris": [
+    25330,
+    19409
+  ]
+}
