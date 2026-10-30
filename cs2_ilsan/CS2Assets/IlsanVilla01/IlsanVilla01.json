@@ -1,0 +1,25 @@
+{
+  "name": "IlsanVilla01",
+  "title": "해송빌라",
+  "kind": "주거",
+  "lot_cells": [
+    2,
+    3
+  ],
+  "lot_m": [
+    16.0,
+    24.0
+  ],
+  "footprint_m": [
+    14.0,
+    13.0
+  ],
+  "height_m": 17.23,
+  "lod0_tris": 10955,
+  "openings": 40,
+  "texture": 2048,
+  "lod_tris": [
+    8446,
+    2350
+  ]
+}

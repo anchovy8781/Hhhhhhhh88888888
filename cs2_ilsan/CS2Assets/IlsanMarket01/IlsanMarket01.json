@@ -1,0 +1,25 @@
+{
+  "name": "IlsanMarket01",
+  "title": "수산물 판매센터",
+  "kind": "시장",
+  "lot_cells": [
+    4,
+    3
+  ],
+  "lot_m": [
+    32.0,
+    24.0
+  ],
+  "footprint_m": [
+    30.0,
+    16.0
+  ],
+  "height_m": 13.65,
+  "lod0_tris": 31109,
+  "openings": 27,
+  "texture": 2048,
+  "lod_tris": [
+    13288,
+    1832
+  ]
+}

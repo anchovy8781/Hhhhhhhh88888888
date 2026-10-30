@@ -1,0 +1,25 @@
+{
+  "name": "IlsanPension01",
+  "title": "바다펜션",
+  "kind": "펜션",
+  "lot_cells": [
+    2,
+    3
+  ],
+  "lot_m": [
+    16.0,
+    24.0
+  ],
+  "footprint_m": [
+    12.5,
+    12.0
+  ],
+  "height_m": 12.83,
+  "lod0_tris": 6800,
+  "openings": 22,
+  "texture": 2048,
+  "lod_tris": [
+    4959,
+    1664
+  ]
+}

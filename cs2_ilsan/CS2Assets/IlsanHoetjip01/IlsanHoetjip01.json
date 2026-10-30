@@ -1,0 +1,25 @@
+{
+  "name": "IlsanHoetjip01",
+  "title": "바다횟집",
+  "kind": "횟집",
+  "lot_cells": [
+    2,
+    3
+  ],
+  "lot_m": [
+    16.0,
+    24.0
+  ],
+  "footprint_m": [
+    15.2,
+    15.0
+  ],
+  "height_m": 15.35,
+  "lod0_tris": 16543,
+  "openings": 22,
+  "texture": 2048,
+  "lod_tris": [
+    8629,
+    1868
+  ]
+}

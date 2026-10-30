@@ -1,0 +1,25 @@
+{
+  "name": "IlsanMixed01",
+  "title": "근린상가",
+  "kind": "근린상가",
+  "lot_cells": [
+    3,
+    3
+  ],
+  "lot_m": [
+    24.0,
+    24.0
+  ],
+  "footprint_m": [
+    22.0,
+    16.0
+  ],
+  "height_m": 23.15,
+  "lod0_tris": 36331,
+  "openings": 47,
+  "texture": 2048,
+  "lod_tris": [
+    16353,
+    3462
+  ]
+}

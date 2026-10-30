@@ -1,0 +1,25 @@
+{
+  "name": "IlsanCafe01",
+  "title": "카페 파도",
+  "kind": "카페",
+  "lot_cells": [
+    2,
+    3
+  ],
+  "lot_m": [
+    16.0,
+    24.0
+  ],
+  "footprint_m": [
+    14.0,
+    14.0
+  ],
+  "height_m": 14.35,
+  "lod0_tris": 12300,
+  "openings": 25,
+  "texture": 2048,
+  "lod_tris": [
+    7744,
+    1984
+  ]
+}

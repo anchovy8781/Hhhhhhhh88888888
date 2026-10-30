@@ -1,0 +1,25 @@
+{
+  "name": "IlsanShop01",
+  "title": "편의점",
+  "kind": "상가",
+  "lot_cells": [
+    2,
+    2
+  ],
+  "lot_m": [
+    16.0,
+    16.0
+  ],
+  "footprint_m": [
+    14.0,
+    12.0
+  ],
+  "height_m": 12.95,
+  "lod0_tris": 10047,
+  "openings": 20,
+  "texture": 2048,
+  "lod_tris": [
+    6387,
+    1612
+  ]
+}

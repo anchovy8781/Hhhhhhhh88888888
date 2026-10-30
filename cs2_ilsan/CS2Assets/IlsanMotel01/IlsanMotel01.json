@@ -1,0 +1,25 @@
+{
+  "name": "IlsanMotel01",
+  "title": "호텔 일산",
+  "kind": "숙박",
+  "lot_cells": [
+    3,
+    4
+  ],
+  "lot_m": [
+    24.0,
+    32.0
+  ],
+  "footprint_m": [
+    20.0,
+    18.0
+  ],
+  "height_m": 28.2,
+  "lod0_tris": 33131,
+  "openings": 96,
+  "texture": 2048,
+  "lod_tris": [
+    23576,
+    6018
+  ]
+}

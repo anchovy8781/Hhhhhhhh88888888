@@ -1,0 +1,25 @@
+{
+  "name": "IlsanHoetjip02",
+  "title": "동해회센터",
+  "kind": "횟집",
+  "lot_cells": [
+    3,
+    3
+  ],
+  "lot_m": [
+    24.0,
+    24.0
+  ],
+  "footprint_m": [
+    23.0,
+    14.5
+  ],
+  "height_m": 11.15,
+  "lod0_tris": 20305,
+  "openings": 16,
+  "texture": 2048,
+  "lod_tris": [
+    9292,
+    1516
+  ]
+}

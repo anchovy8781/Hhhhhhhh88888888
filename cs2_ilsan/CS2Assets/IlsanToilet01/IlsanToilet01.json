@@ -1,0 +1,25 @@
+{
+  "name": "IlsanToilet01",
+  "title": "해변 화장실",
+  "kind": "화장실",
+  "lot_cells": [
+    2,
+    2
+  ],
+  "lot_m": [
+    16.0,
+    16.0
+  ],
+  "footprint_m": [
+    12.0,
+    7.0
+  ],
+  "height_m": 4.0,
+  "lod0_tris": 5563,
+  "openings": 6,
+  "texture": 1024,
+  "lod_tris": [
+    2354,
+    364
+  ]
+}

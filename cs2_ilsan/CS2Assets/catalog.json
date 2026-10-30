@@ -1,0 +1,327 @@
+[
+  {
+    "name": "IlsanHoetjip01",
+    "title": "바다횟집",
+    "kind": "횟집",
+    "lot_cells": [
+      2,
+      3
+    ],
+    "lot_m": [
+      16.0,
+      24.0
+    ],
+    "footprint_m": [
+      15.2,
+      15.0
+    ],
+    "height_m": 15.35,
+    "lod0_tris": 16543,
+    "openings": 22,
+    "texture": 2048,
+    "lod_tris": [
+      8629,
+      1868
+    ]
+  },
+  {
+    "name": "IlsanHoetjip02",
+    "title": "동해회센터",
+    "kind": "횟집",
+    "lot_cells": [
+      3,
+      3
+    ],
+    "lot_m": [
+      24.0,
+      24.0
+    ],
+    "footprint_m": [
+      23.0,
+      14.5
+    ],
+    "height_m": 11.15,
+    "lod0_tris": 20305,
+    "openings": 16,
+    "texture": 2048,
+    "lod_tris": [
+      9292,
+      1516
+    ]
+  },
+  {
+    "name": "IlsanCafe01",
+    "title": "카페 파도",
+    "kind": "카페",
+    "lot_cells": [
+      2,
+      3
+    ],
+    "lot_m": [
+      16.0,
+      24.0
+    ],
+    "footprint_m": [
+      14.0,
+      14.0
+    ],
+    "height_m": 14.35,
+    "lod0_tris": 12300,
+    "openings": 25,
+    "texture": 2048,
+    "lod_tris": [
+      7744,
+      1984
+    ]
+  },
+  {
+    "name": "IlsanMotel01",
+    "title": "호텔 일산",
+    "kind": "숙박",
+    "lot_cells": [
+      3,
+      4
+    ],
+    "lot_m": [
+      24.0,
+      32.0
+    ],
+    "footprint_m": [
+      20.0,
+      18.0
+    ],
+    "height_m": 28.2,
+    "lod0_tris": 33131,
+    "openings": 96,
+    "texture": 2048,
+    "lod_tris": [
+      23576,
+      6018
+    ]
+  },
+  {
+    "name": "IlsanShop01",
+    "title": "편의점",
+    "kind": "상가",
+    "lot_cells": [
+      2,
+      2
+    ],
+    "lot_m": [
+      16.0,
+      16.0
+    ],
+    "footprint_m": [
+      14.0,
+      12.0
+    ],
+    "height_m": 12.95,
+    "lod0_tris": 10047,
+    "openings": 20,
+    "texture": 2048,
+    "lod_tris": [
+      6387,
+      1612
+    ]
+  },
+  {
+    "name": "IlsanGrill01",
+    "title": "조개구이",
+    "kind": "조개구이",
+    "lot_cells": [
+      2,
+      2
+    ],
+    "lot_m": [
+      16.0,
+      16.0
+    ],
+    "footprint_m": [
+      14.0,
+      11.0
+    ],
+    "height_m": 5.7,
+    "lod0_tris": 6239,
+    "openings": 0,
+    "texture": 1024,
+    "lod_tris": [
+      2727,
+      106
+    ]
+  },
+  {
+    "name": "IlsanCrab01",
+    "title": "대게 · 킹크랩",
+    "kind": "대게",
+    "lot_cells": [
+      2,
+      3
+    ],
+    "lot_m": [
+      16.0,
+      24.0
+    ],
+    "footprint_m": [
+      15.0,
+      15.0
+    ],
+    "height_m": 11.06,
+    "lod0_tris": 12746,
+    "openings": 13,
+    "texture": 2048,
+    "lod_tris": [
+      6851,
+      2270
+    ]
+  },
+  {
+    "name": "IlsanMixed01",
+    "title": "근린상가",
+    "kind": "근린상가",
+    "lot_cells": [
+      3,
+      3
+    ],
+    "lot_m": [
+      24.0,
+      24.0
+    ],
+    "footprint_m": [
+      22.0,
+      16.0
+    ],
+    "height_m": 23.15,
+    "lod0_tris": 36331,
+    "openings": 47,
+    "texture": 2048,
+    "lod_tris": [
+      16353,
+      3462
+    ]
+  },
+  {
+    "name": "IlsanVilla01",
+    "title": "해송빌라",
+    "kind": "주거",
+    "lot_cells": [
+      2,
+      3
+    ],
+    "lot_m": [
+      16.0,
+      24.0
+    ],
+    "footprint_m": [
+      14.0,
+      13.0
+    ],
+    "height_m": 17.23,
+    "lod0_tris": 10955,
+    "openings": 40,
+    "texture": 2048,
+    "lod_tris": [
+      8446,
+      2350
+    ]
+  },
+  {
+    "name": "IlsanPension01",
+    "title": "바다펜션",
+    "kind": "펜션",
+    "lot_cells": [
+      2,
+      3
+    ],
+    "lot_m": [
+      16.0,
+      24.0
+    ],
+    "footprint_m": [
+      12.5,
+      12.0
+    ],
+    "height_m": 12.83,
+    "lod0_tris": 6800,
+    "openings": 22,
+    "texture": 2048,
+    "lod_tris": [
+      4959,
+      1664
+    ]
+  },
+  {
+    "name": "IlsanMarket01",
+    "title": "수산물 판매센터",
+    "kind": "시장",
+    "lot_cells": [
+      4,
+      3
+    ],
+    "lot_m": [
+      32.0,
+      24.0
+    ],
+    "footprint_m": [
+      30.0,
+      16.0
+    ],
+    "height_m": 13.65,
+    "lod0_tris": 31109,
+    "openings": 27,
+    "texture": 2048,
+    "lod_tris": [
+      13288,
+      1832
+    ]
+  },
+  {
+    "name": "IlsanChicken01",
+    "title": "치킨 · 호프",
+    "kind": "치킨",
+    "lot_cells": [
+      2,
+      2
+    ],
+    "lot_m": [
+      16.0,
+      16.0
+    ],
+    "footprint_m": [
+      13.5,
+      10.5
+    ],
+    "height_m": 10.25,
+    "lod0_tris": 15396,
+    "openings": 13,
+    "texture": 2048,
+    "lod_tris": [
+      6540,
+      1370
+    ]
+  },
+  {
+    "name": "IlsanToilet01",
+    "title": "해변 화장실",
+    "kind": "화장실",
+    "lot_cells": [
+      2,
+      2
+    ],
+    "lot_m": [
+      16.0,
+      16.0
+    ],
+    "footprint_m": [
+      12.0,
+      7.0
+    ],
+    "height_m": 4.0,
+    "lod0_tris": 5563,
+    "openings": 6,
+    "texture": 1024,
+    "lod_tris": [
+      2354,
+      364
+    ]
+  }
+]

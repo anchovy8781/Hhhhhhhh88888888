@@ -1,0 +1,25 @@
+{
+  "name": "IlsanGrill01",
+  "title": "조개구이",
+  "kind": "조개구이",
+  "lot_cells": [
+    2,
+    2
+  ],
+  "lot_m": [
+    16.0,
+    16.0
+  ],
+  "footprint_m": [
+    14.0,
+    11.0
+  ],
+  "height_m": 5.7,
+  "lod0_tris": 6239,
+  "openings": 0,
+  "texture": 1024,
+  "lod_tris": [
+    2727,
+    106
+  ]
+}

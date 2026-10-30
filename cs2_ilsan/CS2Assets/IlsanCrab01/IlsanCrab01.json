@@ -1,0 +1,25 @@
+{
+  "name": "IlsanCrab01",
+  "title": "대게 · 킹크랩",
+  "kind": "대게",
+  "lot_cells": [
+    2,
+    3
+  ],
+  "lot_m": [
+    16.0,
+    24.0
+  ],
+  "footprint_m": [
+    15.0,
+    15.0
+  ],
+  "height_m": 11.06,
+  "lod0_tris": 12746,
+  "openings": 13,
+  "texture": 2048,
+  "lod_tris": [
+    6851,
+    2270
+  ]
+}
