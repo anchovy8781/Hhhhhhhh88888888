@@ -16,11 +16,11 @@
     16.0
   ],
   "height_m": 9.65,
-  "lod0_tris": 6496,
+  "lod0_tris": 9400,
   "openings": 0,
   "texture": 1024,
   "lod_tris": [
-    1996,
+    2808,
     80
   ]
 }
