@@ -1,0 +1,26 @@
+{
+  "name": "IlsanHoetjip03",
+  "title": "갈매기횟집",
+  "kind": "횟집",
+  "type": "building",
+  "lot_cells": [
+    2,
+    2
+  ],
+  "lot_m": [
+    16.0,
+    16.0
+  ],
+  "footprint_m": [
+    13.0,
+    10.0
+  ],
+  "height_m": 9.1,
+  "lod0_tris": 22697,
+  "openings": 13,
+  "texture": 2048,
+  "lod_tris": [
+    9025,
+    1466
+  ]
+}

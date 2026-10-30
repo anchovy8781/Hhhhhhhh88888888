@@ -1,0 +1,26 @@
+{
+  "name": "IlsanYouthStage",
+  "title": "청년스테이지ON",
+  "kind": "청년공간",
+  "type": "building",
+  "lot_cells": [
+    2,
+    3
+  ],
+  "lot_m": [
+    16.0,
+    24.0
+  ],
+  "footprint_m": [
+    14.0,
+    17.0
+  ],
+  "height_m": 22.42,
+  "lod0_tris": 13607,
+  "openings": 42,
+  "texture": 2048,
+  "lod_tris": [
+    9872,
+    3184
+  ]
+}
