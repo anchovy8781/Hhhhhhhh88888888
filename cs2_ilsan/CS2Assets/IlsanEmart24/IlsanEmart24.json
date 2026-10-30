@@ -1,0 +1,26 @@
+{
+  "name": "IlsanEmart24",
+  "title": "이마트24",
+  "kind": "편의점",
+  "type": "building",
+  "lot_cells": [
+    2,
+    2
+  ],
+  "lot_m": [
+    16.0,
+    16.0
+  ],
+  "footprint_m": [
+    12.0,
+    9.0
+  ],
+  "height_m": 9.4,
+  "lod0_tris": 16809,
+  "openings": 13,
+  "texture": 2048,
+  "lod_tris": [
+    7215,
+    1292
+  ]
+}
