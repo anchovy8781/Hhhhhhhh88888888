@@ -934,5 +934,31 @@
       7959,
       2130
     ]
+  },
+  {
+    "name": "IlsanCompose",
+    "title": "컴포즈커피",
+    "kind": "카페",
+    "type": "building",
+    "lot_cells": [
+      2,
+      2
+    ],
+    "lot_m": [
+      16.0,
+      16.0
+    ],
+    "footprint_m": [
+      10.0,
+      7.5
+    ],
+    "height_m": 5.6,
+    "lod0_tris": 26905,
+    "openings": 7,
+    "texture": 2048,
+    "lod_tris": [
+      8866,
+      620
+    ]
   }
 ]
