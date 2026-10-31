@@ -49,9 +49,15 @@ def poster(f, u, z, w, h, d, board, text, letters, text_fn_b):
 #    (운전석 왼쪽에 주문판 · 픽업 창): 오른쪽 차로로 들어와 뒤에서 주문, 왼쪽 면 픽업 창에서 받고 앞으로 나간다.
 # ---------------------------------------------------------------------------
 
-def emblem(f, u, z, r, d=0.0, green="sb_green", white="letters_sb", n=32):
-    """원형 엠블럼: 초록 원판 + 흰 고리 + 초록 안쪽 + 흰 별 (상표 그림 대신 쓰는 근사치)"""
+def emblem(f, u, z, r, d=0.0, green="sb_green", white="letters_sb", n=32, b=None):
+    """원형 엠블럼: 초록 원판 위에 흰 원판 + 실제 사이렌 로고(logos/starbucks.svg).
+    로고 파일이 없으면 흰 고리 + 초록 안쪽 + 흰 별 근사치. 먼 LOD 에서는 초록 원판만 남는다."""
     f.disc(u, z, d, r, 0.10, green, n=n)
+    parts = b.logo("starbucks", 2 * r * 0.985, 2 * r * 0.985, 0.02) if b is not None else None
+    if parts:
+        f.disc(u, z, d + 0.10, r * 0.985, 0.012, white, n=n)
+        b.put_logo(f, parts, "starbucks", u, z, d + 0.112, emit=0.6, kind=None)
+        return
     f.disc(u, z, d + 0.10, r * 0.88, 0.015, white, n=n)
     f.disc(u, z, d + 0.115, r * 0.76, 0.015, green, n=n)
     f.poly(PR.star(u, z, r * 0.5, r * 0.2), d + 0.13, 0.025, white)
@@ -86,7 +92,7 @@ def starbucks_dt(text_fn=None):
         uu = 0.5 + k * 1.03
         f.box(uu, uu + 0.08, 3.86, 4.0, 0.25, 2.1, "sb_wood", attached=False)
     f.curtain(0.4, 10.5, g + 0.1, H - 0.9, 3.0, 1.5, fins=0.3, fin_mat="sb_wood", lit=0.6, rng=b.rng, name="cw2")
-    emblem(f, 12.8, g + 1.6, 1.25)
+    emblem(f, 12.8, g + 1.6, 1.25, b=b)
     f.reserve(SIGN, 11.5, 14.1, g + 0.3, g + 2.9, 0, 0.2, "emblem")
     b.wall_text("front", "STARBUCKS", 5.45, H - 0.45, 9.5, 0.55, mat="letters_sb")
     t = b.letters("WiFi · 텀블러 할인 · 사이렌 오더", 3.6, 0.22, 0.005)
@@ -100,14 +106,14 @@ def starbucks_dt(text_fn=None):
     lf.window(6.0, 1.05, 2.0, 1.25, frame="frame_dark", name="pickup")
     b.canopy("left", 4.6, 7.4, 2.55, depth=1.1, mat="sb_green")
     b.lightbox("left", 6.0, 2.85, 2.2, 0.42, "PICK-UP", mat="sb_green", letters="letters_sb")
-    emblem(lf, 2.6, g + 1.6, 1.1)
+    emblem(lf, 2.6, g + 1.6, 1.1, b=b)
     lf.reserve(SIGN, 1.4, 3.8, g + 0.45, g + 2.75, 0, 0.2, "emblem_l")
     # 오른쪽 면 (들어오는 차로): 앞 모서리 유리, 2층 유리, 큰 엠블럼, DRIVE THRU 간판
     rf = b.face("right")                                                   # u = y + 9, 정면 쪽 u = 0
     rf.storefront(0.5, 5.5, 0.03, 3.9, bay=1.6, transom=3.0, name="glass_r")
     rf.curtain(0.12, 8.0, g + 0.1, H - 0.9, 3.0, 1.5, fins=0.3, fin_mat="sb_wood", lit=0.6, rng=b.rng,
                name="cw2_r")
-    emblem(rf, 11.5, g + 1.6, 1.25)
+    emblem(rf, 11.5, g + 1.6, 1.25, b=b)
     rf.reserve(SIGN, 10.2, 12.8, g + 0.3, g + 2.9, 0, 0.2, "emblem_r")
     b.lightbox("right", 10.5, 2.4, 3.4, 0.6, "DRIVE THRU", mat="sb_green", letters="letters_sb")
     # 뒤: 직원 문, 실외기, 2층 창, 주문판 · 미리 보는 메뉴판 · 스피커 기둥 (뒤 차로를 향해)
@@ -149,7 +155,7 @@ def starbucks_dt(text_fn=None):
     for px in (-5.9, 5.9):
         b.roof_reserve("roof_planter", *PR.planter(m, px - 0.6, px + 0.6, -2.9, -1.1, z=zr, seed=int(px), shrubs=1))
     top = b.stair_house(b.x0 + 0.6, b.x0 + 4.2, b.y1 - 3.8, b.y1 - 0.6, h=2.8)
-    emblem(Facade(m, "front", b.x0 + 0.6, b.x0 + 4.2, b.y1 - 3.8, b.y1 - 0.6), 3.0, z + 1.6, 0.45, n=24)
+    emblem(Facade(m, "front", b.x0 + 0.6, b.x0 + 4.2, b.y1 - 3.8, b.y1 - 0.6), 3.0, z + 1.6, 0.45, n=24, b=b)
     for i in range(3):
         b.ac_roof(b.x1 - 1.2 - i * 1.25, b.y1 - 1.0, z)
     b.top = max(b.top, top)
@@ -193,7 +199,7 @@ def starbucks_dt(text_fn=None):
     m.box(px - 1.05, px + 1.05, py - 0.08, py + 0.08, 4.4, 6.5, "metal_dark")
     for side in ("front", "back"):
         pfac = Facade(m, side, px - 1.05, px + 1.05, py - 0.08, py + 0.08)
-        emblem(pfac, 1.05, 5.45, 0.98, n=28)
+        emblem(pfac, 1.05, 5.45, 0.98, n=28, b=b)
         tt = b.letters("DRIVE THRU", 1.2, 0.3, 0.01)
         if tt:
             Facade(m, side, px - 0.7, px + 0.7, py - 0.12, py + 0.12).text(tt, 0.7, 3.625, 0.0, "letters_sb", kind=None)

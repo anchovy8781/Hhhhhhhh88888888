@@ -16,6 +16,17 @@ CELL = 8.0
 SIDES = ("front", "back", "left", "right")
 
 
+# 간판 문구 -> 실제 로고 키 (logos/<키>.svg 가 있으면 sign_band · lightbox · wall_text 가 문구 대신 로고를 붙인다)
+BRAND_LOGOS = {
+    "STARBUCKS": "starbucks_wordmark", "Homeplus": "homeplus", "GS25": "gs25", "CU": "cu", "7-ELEVEN": "7eleven",
+    "emart24": "emart24", "PARIS BAGUETTE": "parisbaguette", "baskin robbins": "baskinrobbins",
+    "COMPOSE COFFEE": "composecoffee", "MEGA COFFEE": "megacoffee", "EDIYA COFFEE": "ediya",
+    "ANGEL-IN-US": "angelinus", "PASCUCCI": "pascucci", "Gong cha": "gongcha", "봉구비어": "bonggubeer",
+    "DROPTOP": "droptop", "오가다": "ogada", "OLIVE YOUNG": "oliveyoung", "Daiso": "daiso", "BBQ": "bbq",
+    "교촌치킨": "kyochon", "김밥천국": "kimbapcheonguk", "MG새마을금고": "mg", "GS칼텍스": "gscaltex",
+}
+
+
 class Building:
     def __init__(self, lot, width, depth, setback=3.0, seed=0, text_fn=None):
         self.lot = tuple(lot)
@@ -72,6 +83,37 @@ class Building:
         if not text or self.text_fn is None:
             return None
         return self.text_fn(text, max_w, max_h, extrude)
+
+    def logo(self, key, max_w, max_h, depth=0.03):
+        """logos/<key>.svg 실제 로고의 색별 조각 (파일 · 글자 함수가 없으면 None → 호출한 쪽이 글자로 대신한다)"""
+        fn = getattr(self.text_fn, "logo", None)
+        return fn(key, max_w, max_h, depth) if fn else None
+
+    def brand_text(self, f, text, u, z, d, max_w, max_h, depth, mat, emit=2.0, key=None):
+        """손으로 만든 간판 위 브랜드 이름: 실제 로고가 있으면 로고, 없으면 글자 (예약은 하지 않는다)"""
+        key = key or BRAND_LOGOS.get(text)
+        parts = self.logo(key, max_w, max_h, depth) if key else None
+        if parts:
+            self.put_logo(f, parts, key, u, z, d, emit=emit, kind=None)
+            return True
+        t = self.letters(text, max_w, max_h, depth)
+        if t:
+            f.text(t, u, z, d, mat, kind=None)
+        return bool(t)
+
+    def put_logo(self, f, parts, key, u, z, d, emit=0.0, kind=SIGN, name="logo"):
+        """로고 조각을 파사드 f 의 (u, z) 중심, 뒷면 d 에 붙인다. 조각 색마다 재질(letters_logo_*)을 만들어
+        LOD · UV 에서 글자와 같이 다룬다. emit > 0 이면 밤에 로고 색으로 빛난다. 반환: (폭, 높이, 두께)"""
+        for i, (verts, faces, w, h, depth, rgb) in enumerate(parts):
+            mat = f"letters_logo_{key}_{i}"
+            self.mats[mat] = {"color": rgb, "rough": 0.35}
+            if emit > 0:
+                self.mats[mat].update(emit=tuple(min(1.0, c * 1.25 + 0.02) for c in rgb), emit_strength=emit)
+            f.text((verts, faces, w, h, depth), u, z, d, mat, kind=None)
+        w, h, depth = parts[0][2:5]
+        if kind:
+            f.reserve(kind, u - w / 2, u + w / 2, z - h / 2, z + h / 2, d, d + depth, name)
+        return w, h, depth
 
     def chance(self, p):
         return self.rng.random() < p
@@ -270,8 +312,10 @@ class Building:
 
     # -- 간판 ---------------------------------------------------------------
 
-    def sign_band(self, side, u0, u1, z0, z1, text, sub=None, out=0.32, mat="sign", letters="letters"):
-        """가로 간판: 패널 + 테두리 + 입체 채널 글자 (+ 보조 문구)"""
+    def sign_band(self, side, u0, u1, z0, z1, text, sub=None, out=0.32, mat="sign", letters="letters", logo=None,
+                  logo_emit=2.0):
+        """가로 간판: 패널 + 테두리 + 입체 채널 글자 (+ 보조 문구). logo 키의 실제 로고(logos/<키>.svg)가 있으면
+        본 문구 대신 로고를 붙인다"""
         f = self.face(side)
         if not f.fits(SIGN, u0 - 0.05, u1 + 0.05, z0 - 0.07, z1 + 0.07, 0, out + 0.12):
             raise ValueError(f"{side}: 간판 '{text}' 자리가 다른 요소와 겹칩니다")
@@ -281,21 +325,35 @@ class Building:
         f.box(u0 - 0.04, u0, z0, z1, 0, out + 0.04, "frame_dark")
         f.box(u1, u1 + 0.04, z0, z1, 0, out + 0.04, "frame_dark")
         h = z1 - z0
-        t = self.letters(text, (u1 - u0) * 0.86, h * (0.56 if sub else 0.66), 0.05)
-        if t is not None:
-            f.text(t, (u0 + u1) / 2, z0 + h * (0.62 if sub else 0.5), out, letters, kind=None)
+        logo = logo or BRAND_LOGOS.get(text)
+        mw, mh, zc = (u1 - u0) * 0.86, h * (0.56 if sub else 0.66), z0 + h * (0.62 if sub else 0.5)
+        parts = self.logo(logo, mw, mh, 0.04) if logo else None
+        if parts:
+            self.put_logo(f, parts, logo, (u0 + u1) / 2, zc, out, emit=logo_emit, kind=None)
+        else:
+            t = self.letters(text, mw, mh, 0.05)
+            if t is not None:
+                f.text(t, (u0 + u1) / 2, zc, out, letters, kind=None)
         if sub:
             t2 = self.letters(sub, (u1 - u0) * 0.7, h * 0.2, 0.03)
             if t2 is not None:
                 f.text(t2, (u0 + u1) / 2, z0 + h * 0.2, out, letters, kind=None)
         f.reserve(SIGN, u0 - 0.05, u1 + 0.05, z0 - 0.07, z1 + 0.07, 0, out + 0.12, "sign:" + text)
 
-    def wall_text(self, side, text, u, z, max_w, max_h, mat="letters", extrude=0.06):
-        """벽에 직접 붙인 채널 글자"""
+    def wall_text(self, side, text, u, z, max_w, max_h, mat="letters", extrude=0.06, logo=None, logo_emit=2.0):
+        """벽에 직접 붙인 채널 글자 (logo 키의 실제 로고가 있으면 로고)"""
+        f = self.face(side)
+        logo = logo or BRAND_LOGOS.get(text)
+        parts = self.logo(logo, max_w, max_h, extrude) if logo else None
+        if parts:
+            w, h, depth = parts[0][2:5]
+            if not f.fits(SIGN, u - w / 2, u + w / 2, z - h / 2, z + h / 2, 0, depth + 0.02):
+                raise ValueError(f"{side}: 로고 '{logo}' 자리가 다른 요소와 겹칩니다")
+            self.put_logo(f, parts, logo, u, z, 0.02, emit=logo_emit, name="logo:" + logo)
+            return True
         t = self.letters(text, max_w, max_h, extrude)
         if t is None:
             return False
-        f = self.face(side)
         _, _, w, h, depth = t
         if not f.fits(SIGN, u - w / 2, u + w / 2, z - h / 2, z + h / 2, 0, depth + 0.02):
             raise ValueError(f"{side}: 글자 '{text}' 자리가 다른 요소와 겹칩니다")
@@ -329,16 +387,21 @@ class Building:
                            0.15 + out / 2 + (-lx if sgn > 0 else lx)) for lx, ly, lz in verts]
                 self.m.add(pts, faces, letters)
 
-    def lightbox(self, side, u, z, w, h, text, mat="sign", letters="letters", out=0.18):
-        """작은 사각 간판 (돌출 아님)"""
+    def lightbox(self, side, u, z, w, h, text, mat="sign", letters="letters", out=0.18, logo=None, logo_emit=2.0):
+        """작은 사각 간판 (돌출 아님). logo 키의 실제 로고가 있으면 문구 대신 로고"""
         f = self.face(side)
         if not f.fits(SIGN, u - w / 2 - 0.03, u + w / 2 + 0.03, z, z + h, 0, out + 0.08):
             return False
         f.box(u - w / 2, u + w / 2, z, z + h, 0, out, mat)
         f.box(u - w / 2 - 0.03, u + w / 2 + 0.03, z, z + h, 0, 0.02, "frame_dark")
-        t = self.letters(text, w * 0.84, h * 0.6, 0.03)
-        if t is not None:
-            f.text(t, u, z + h / 2, out, letters, kind=None)
+        logo = logo or BRAND_LOGOS.get(text)
+        parts = self.logo(logo, w * 0.84, h * 0.6, 0.03) if logo else None
+        if parts:
+            self.put_logo(f, parts, logo, u, z + h / 2, out, emit=logo_emit, kind=None)
+        else:
+            t = self.letters(text, w * 0.84, h * 0.6, 0.03)
+            if t is not None:
+                f.text(t, u, z + h / 2, out, letters, kind=None)
         f.reserve(SIGN, u - w / 2 - 0.03, u + w / 2 + 0.03, z, z + h, 0, out + 0.08, "lightbox:" + text)
         return True
 
@@ -486,6 +549,18 @@ def stub_text(text, max_w, max_h, extrude=0.05):
     m = Mesh()
     m.box(-w / 2, w / 2, -h / 2, h / 2, -extrude, extrude, "x")
     return m.verts, m.faces, w, h, 2 * extrude
+
+
+def stub_logo(key, max_w, max_h, depth=0.03):
+    """테스트용 로고 대용: 두 색 조각 (바탕 사각 + 앞 작은 사각), 최대 크기를 꽉 채운다"""
+    a, b = Mesh(), Mesh()
+    a.box(-max_w / 2, max_w / 2, -max_h / 2, max_h / 2, -depth / 2, depth / 2 - 0.002, "x")
+    b.box(-max_w / 4, max_w / 4, -max_h / 4, max_h / 4, -depth / 2, depth / 2, "x")
+    return [(a.verts, a.faces, max_w, max_h, depth, (0.0, 0.3, 0.1)),
+            (b.verts, b.faces, max_w, max_h, depth, (1.0, 1.0, 1.0))]
+
+
+stub_text.logo = stub_logo
 
 
 # ---------------------------------------------------------------------------

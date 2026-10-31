@@ -115,6 +115,19 @@ class DesignTest(unittest.TestCase):
             self.assertEqual(len(glass), 12, name)
             self.assertEqual(G.conflicts(signs + glass), [], name)
 
+    def test_real_logos_on_brand_signs(self):
+        """로고 파일이 있으면 브랜드 간판 문구 자리에 실제 로고(색별 letters_logo_* 재질)가 붙는다.
+        테스트용 로고는 허용 크기를 꽉 채우므로 어떤 비율의 로고도 다른 요소와 겹치지 않는다 (setUpClass 의 검사)"""
+        expect = {"IlsanGS25": "gs25", "IlsanCU": "cu", "IlsanHomeplus": "homeplus", "IlsanStarbucksDT": "starbucks",
+                  "IlsanParisBaguette": "parisbaguette", "IlsanOliveDaiso": "daiso", "IlsanGasStation": "gscaltex",
+                  "IlsanMGBank": "mg", "IlsanShop01": "7eleven", "IlsanCornerTower01": "megacoffee",
+                  "IlsanTerracePark01": "angelinus", "IlsanTerracePark02": "droptop"}
+        for name, key in expect.items():
+            mats = self.built[name][0].m.mat_names
+            self.assertTrue(any(m.startswith(f"letters_logo_{key}_") for m in mats), name)
+        bare = self.built["IlsanCrab01"][0].m.mat_names            # 브랜드가 아닌 가게는 글자 그대로
+        self.assertFalse(any(m.startswith("letters_logo_") for m in bare))
+
 
 if __name__ == "__main__":
     unittest.main()

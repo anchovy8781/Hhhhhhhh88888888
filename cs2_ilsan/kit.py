@@ -3,6 +3,8 @@
 면 방향은 geom 이 이미 바깥으로 맞춰 두므로 여기서는 법선을 다시 계산하지 않는다.
 """
 
+import os
+
 import bmesh
 import bpy
 import numpy as np
@@ -74,8 +76,9 @@ def text_mesh(text, font, size, extrude=0.04):
     return [tuple(v) for v in co], faces, hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]
 
 
-def text_fn_for(font):
-    """designs.Building 에 넘길 글자 함수: (문구, 최대 폭, 최대 높이, 두께) -> 글자 메시"""
+def text_fn_for(font, logo_dir=None):
+    """designs.Building 에 넘길 글자 함수: (문구, 최대 폭, 최대 높이, 두께) -> 글자 메시.
+    fit.logo(키, 최대 폭, 최대 높이, 두께) 는 logos/<키>.svg 로고 조각 (없으면 None)"""
     cache = {}
 
     def fit(text, max_w, max_h, extrude=0.05):
@@ -88,7 +91,107 @@ def text_fn_for(font):
                 s = min(max_w / max(t[2], 1e-6), max_h / max(t[3], 1e-6))
                 cache[key] = text_mesh(text, font, s, extrude)
         return cache[key]
+
+    def logo(key, max_w, max_h, depth=0.03):
+        k = (key, round(max_w, 3), round(max_h, 3), round(depth, 3))
+        if k not in cache:
+            cache[k] = logo_parts(os.path.join(logo_dir or LOGO_DIR, key + ".svg"), max_w, max_h, depth,
+                                  LOGO_TINT.get(key))
+        return cache[k]
+    fit.logo = logo
     return fit
+
+
+# ---------------------------------------------------------------------------
+# 로고 (SVG -> 색별 입체 조각)
+# ---------------------------------------------------------------------------
+
+LOGO_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logos")
+# 채움색이 없는(검정) 한 가지 색 SVG 를 칠할 브랜드 색 (선형 RGB)
+LOGO_TINT = {"starbucks": (0.0, 0.125, 0.045)}
+LOGO_LAYER = 0.002      # SVG 에서 나중에 그린 도형일수록 이만큼 앞으로 (겹친 색이 깜빡이지 않게)
+
+
+def _svg_paths(path):
+    """SVG 를 가져와 도형마다 (평면 삼각형 좌표 [(x, y)], 면, 선형 RGB) 를 그린 순서대로"""
+    import addon_utils          # bpy 를 먼저 불러와야 쓸 수 있다
+    addon_utils.enable("io_curve_svg", default_set=False)
+    before_obj, before_mat = set(bpy.data.objects), set(bpy.data.materials)
+    bpy.ops.import_curve.svg(filepath=path)
+    new = sorted((o for o in bpy.data.objects if o not in before_obj), key=lambda o: o.name)
+    for o in new:
+        if o.type == 'CURVE':
+            o.data.dimensions = '2D'
+            o.data.fill_mode = 'BOTH'
+            o.data.extrude = 0.0
+            o.data.bevel_depth = 0.0
+            o.data.resolution_u = 8
+    bpy.context.view_layer.update()
+    dg = bpy.context.evaluated_depsgraph_get()
+    out = []
+    for o in new:
+        if o.type != 'CURVE':
+            continue
+        me = bpy.data.meshes.new_from_object(o.evaluated_get(dg))
+        mw = o.matrix_world
+        pts = [tuple((mw @ v.co)[:2]) for v in me.vertices]
+        faces = [tuple(p.vertices) for p in me.polygons]
+        mat = o.data.materials[0] if len(o.data.materials) else None
+        rgb = tuple(float(c) for c in mat.diffuse_color[:3]) if mat else (0.0, 0.0, 0.0)
+        if faces:
+            out.append((pts, faces, rgb))
+        bpy.data.meshes.remove(me)
+    for o in new:
+        data = o.data
+        bpy.data.objects.remove(o)
+        if data is not None and data.users == 0:
+            bpy.data.curves.remove(data)
+    for m in set(bpy.data.materials) - before_mat:
+        bpy.data.materials.remove(m)
+    return out
+
+
+def logo_parts(path, max_w, max_h, depth=0.03, tint=None):
+    """SVG 로고 -> 색별 조각 [(verts, faces, 폭, 높이, 두께, 선형 RGB)]. 모든 조각이 같은 중심 · 배율을 써서
+    그대로 겹쳐 놓으면 로고가 된다. 면은 앞면 + 옆면만 (뒷면은 간판에 붙어 보이지 않는다). 파일이 없으면 None"""
+    if not os.path.isfile(path):
+        return None
+    paths = _svg_paths(path)
+    if not paths:
+        return None
+    allp = np.array([p for pts, _, _ in paths for p in pts], dtype=np.float64)
+    lo, hi = allp.min(0), allp.max(0)
+    s = min(max_w / max(hi[0] - lo[0], 1e-9), max_h / max(hi[1] - lo[1], 1e-9))
+    mid = (lo + hi) / 2
+    w, h = (hi[0] - lo[0]) * s, (hi[1] - lo[1]) * s
+    total = depth + LOGO_LAYER * (len(paths) - 1)
+    groups = {}
+    for k, (pts, faces, rgb) in enumerate(paths):
+        if tint is not None and max(rgb) < 0.02:
+            rgb = tint
+        key = tuple(round(c, 4) for c in rgb)
+        verts, fs = groups.setdefault(key, ([], []))
+        xy = [((x - mid[0]) * s, (y - mid[1]) * s) for x, y in pts]
+        zb, zf = -total / 2, -total / 2 + depth + LOGO_LAYER * k
+        base = len(verts)
+        verts += [(x, y, zf) for x, y in xy]                 # 앞면
+        n = len(xy)
+        verts += [(x, y, zb) for x, y in xy]                 # 옆면 아래 끝
+        edges = {}
+        for f in faces:
+            area = sum(xy[f[i]][0] * xy[f[(i + 1) % len(f)]][1] - xy[f[(i + 1) % len(f)]][0] * xy[f[i]][1]
+                       for i in range(len(f)))
+            if abs(area) < 1e-12:
+                continue
+            f = f if area > 0 else tuple(reversed(f))      # 앞(+z)에서 반시계
+            fs.append(tuple(base + i for i in f))
+            for i in range(len(f)):
+                a, b = f[i], f[(i + 1) % len(f)]
+                edges[(a, b)] = edges.get((a, b), 0) + 1
+        for (a, b) in edges:                                 # 경계 모서리: 반대 방향 짝이 없는 것
+            if (b, a) not in edges:
+                fs.append((base + n + a, base + n + b, base + b, base + a))
+    return [(v, f, w, h, total, rgb) for rgb, (v, f) in groups.items()]
 
 
 # ---------------------------------------------------------------------------

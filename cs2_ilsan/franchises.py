@@ -288,9 +288,8 @@ def olive_daiso(text_fn=None):
         b.m.box(px - 0.07, px + 0.07, sy + 0.2, sy + 0.34, z, z + 4.0, "metal_dark")
         b.m.beam((px, sy + 0.27, z + 3.0), (px, sy + 1.6, z + 0.05), 0.06, 0.06, "metal_dark")
     b.m.box(-8.0, 8.0, sy, sy + 0.2, z + 1.2, z + 3.9, "ds_board")
-    t = b.letters("Daiso 다이소", 13.0, 1.8, 0.08)
-    if t:
-        Facade(b.m, "front", -8.0, 8.0, sy, sy + 0.2).text(t, 8.0, z + 2.55, 0.0, "letters_ds", kind=None)
+    b.brand_text(Facade(b.m, "front", -8.0, 8.0, sy, sy + 0.2), "Daiso 다이소", 8.0, z + 2.55, 0.0, 13.0, 1.8, 0.08,
+                 "letters_ds", key="daiso")
     b.roof_reserve("roof_sign", -8.1, 8.1, sy - 0.1, sy + 1.65, z, z + 4.0)
     b.stair_house(b.x1 - 4.4, b.x1 - 0.8, b.y1 - 4.2, b.y1 - 0.6, h=3.0)
     for i in range(5):
@@ -435,13 +434,9 @@ def gas_station(text_fn=None):
     m.box(cx0 - 0.15, cx1 + 0.15, cy0 - 0.15, cy1 + 0.15, cz + 0.4, cz + 1.2, "gs_white")
     m.box(cx0 - 0.2, cx1 + 0.2, cy0 - 0.2, cy1 + 0.2, cz + 0.5, cz + 0.75, "gs_blue")
     m.box(cx0 - 0.22, cx1 + 0.22, cy0 - 0.22, cy1 + 0.22, cz + 0.75, cz + 0.85, "gs_orange")
-    t = b.letters("GS칼텍스", 7.0, 0.32, 0.03)
-    if t:
-        Facade(m, "front", cx0 - 0.22, cx1 + 0.22, cy0 - 0.22, cy1 + 0.22).text(t, 13.22, cz + 1.02, 0.0,
-                                                                              "letters_gs", kind=None)
-        for side in ("left", "right"):
-            Facade(m, side, cx0 - 0.22, cx1 + 0.22, cy0 - 0.22, cy1 + 0.22).text(t, 7.22, cz + 1.02, 0.0,
-                                                                               "letters_gs", kind=None)
+    for side, uc in (("front", 13.22), ("left", 7.22), ("right", 7.22)):       # 캐노피 띠 위 GS칼텍스 (로고 또는 글자)
+        b.brand_text(Facade(m, side, cx0 - 0.22, cx1 + 0.22, cy0 - 0.22, cy1 + 0.22), "GS칼텍스", uc, cz + 1.02, 0.0,
+                     7.0, 0.32, 0.03, "letters_gs")
     for px in range(-11, 12, 4):
         for py in (-11.0, -6.5, -1.0):
             m.box(px - 0.6, px + 0.6, py - 0.3, py + 0.3, cz - 0.02, cz, "lamp")
@@ -465,9 +460,7 @@ def gas_station(text_fn=None):
     m.box(px - 0.82, px + 0.82, py - 0.27, py + 0.27, 5.6, 7.3, "gs_blue")
     m.box(px - 0.83, px + 0.83, py - 0.28, py + 0.28, 5.4, 5.6, "gs_orange")
     pf = Facade(m, "front", px - 0.83, px + 0.83, py - 0.28, py + 0.28)
-    t = b.letters("GS칼텍스", 1.4, 0.4, 0.02)
-    if t:
-        pf.text(t, 0.83, 6.45, 0.0, "letters_gsw", kind=None)
+    b.brand_text(pf, "GS칼텍스", 0.83, 6.45, 0.0, 1.4, 0.4, 0.02, "letters_gsw")
     for k, (fuel, price, mat) in enumerate((("휘발유", "1,689", "letters_led"), ("경유", "1,559", "letters_led2"),
                                              ("고급", "1,949", "letters_led"))):
         zz = 4.6 - k * 1.2
