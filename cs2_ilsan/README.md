@@ -226,6 +226,28 @@ BBQ 치킨(빨강 간판 · 차양 · 테이블 · 배달 오토바이 2대)도 
 >   텍스처 5장을 `<이름>_LOD1_BaseColor.png` 처럼 복사하세요.
 > - 부지 바닥판: 부지 전체에 얇은 포장 바닥(지면 위 3 cm)이 포함되어 있습니다.
 
+### 블렌더 파일로 올리기
+
+`Blender/<이름>.blend` 에 에셋마다 블렌더 파일이 하나씩 있습니다 (43개, 블렌더 4.2+ · 5.0 에서 열림).
+`Blender/Ilsan_Street.blend` 는 실측 지형 위에 배치표대로 모든 에셋을 놓은 거리 전체 장면입니다.
+
+| 들어 있는 것 | 내용 |
+|---|---|
+| 오브젝트 | `<이름>` (LOD0), `CS2_LODs` 컬렉션에 `<이름>_LOD1` · `_LOD2`. Z 위, 원점 = 부지 중심 지면, 정면 = −Y |
+| 재질 | 구운 텍스처로 만든 재질 하나 (BaseColor · Normal · MaskMap · Emissive 연결, ControlMask 는 노드로만 둠) |
+| 텍스처 | 파일 안에 넣지 않고 `../CS2Assets/<이름>/` 를 상대 경로로 읽습니다 → **Blender 와 CS2Assets 폴더를 같은 곳에** 두세요 |
+| 사용자 속성 | LOD0 오브젝트에 `cs2_lot_cells` · `cs2_type` · `cs2_height_m` 등 |
+| 애드온 설정 | 에셋 이름 = `<이름>`, 프로젝트 루트 = `//../CS2Assets/` |
+
+1. `cs2_asset_tools.zip` 애드온을 설치합니다 (편집 > 환경 설정 > 애드온 > 디스크에서 설치).
+2. `Blender/<이름>.blend` 를 열면 3D 뷰 사이드바(N) **Cities: Skylines II** 탭에 이름 · 경로가 채워져 있습니다.
+3. 고칠 곳을 고친 뒤 **검사** → **FBX 내보내기** 를 누르면 `CS2Assets/<이름>/<이름>[_LODn].fbx` 가 다시 써집니다
+   (텍스처 5장은 그 폴더에 이미 있음). 검사의 "바닥이 원점 높이가 아님" 경고는 땅속 30 cm 기초 때문이라 그대로 두면 됩니다.
+4. 게임 에디터 → Asset Importer 에서 `CS2Assets` 를 Project Root 로 지정해 가져옵니다 (위 3번과 같음).
+
+다시 만들기: `blender -b --python make_blends.py` (전체) · `-- --only IlsanGS25` (일부),
+거리 장면은 `blender -b --python preview_layout.py -- --save Blender/Ilsan_Street.blend`.
+
 ## 4. 직접 다시 만들기 · 고치기
 
 ```bash

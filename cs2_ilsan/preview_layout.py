@@ -369,8 +369,12 @@ def main():
     sc.cycles.use_denoising = True
     sc.render.resolution_x, sc.render.resolution_y = 1920, 1080
     sc.view_settings.view_transform = 'AgX'
-    if a.save:
-        bpy.ops.wm.save_as_mainfile(filepath=os.path.abspath(a.save))
+    if a.save:                                    # 텍스처는 CS2Assets 를 상대 경로로 가리킨다
+        for img in bpy.data.images:
+            if img.filepath:
+                img.filepath = bpy.path.relpath(bpy.path.abspath(img.filepath),
+                                                start=os.path.dirname(os.path.abspath(a.save)))
+        bpy.ops.wm.save_as_mainfile(filepath=os.path.abspath(a.save), compress=True, relative_remap=False)
     if a.render:
         sc.render.filepath = os.path.abspath(a.render)
         bpy.ops.render.render(write_still=True)
