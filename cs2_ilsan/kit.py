@@ -110,7 +110,7 @@ def text_fn_for(font, logo_dir=None):
 
 LOGO_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logos")
 # 채움색이 없는(검정) 한 가지 색 SVG 를 칠할 브랜드 색 (선형 RGB)
-LOGO_TINT = {"starbucks": (0.0, 0.125, 0.045)}
+LOGO_TINT = {"starbucks": (0.0, 0.125, 0.045), "bonggubeer": (0.955, 0.604, 0.004)}
 LOGO_LAYER = 0.002      # SVG 에서 나중에 그린 도형일수록 이만큼 앞으로 (겹친 색이 깜빡이지 않게)
 
 
@@ -129,6 +129,15 @@ def _flatten_gradients(src):
     return src
 
 
+def _prepare_svg(src):
+    """블렌더 SVG 가져오기 전 정리: 그라데이션 -> 평균색, <defs> · clipPath · mask 정의 제거
+    (가져오기는 정의 안의 잘라내기 경로도 검은 도형으로 그려 버린다)"""
+    src = _flatten_gradients(src)
+    src = re.sub(r"<defs\b.*?</defs>|<defs\b[^>]*/>", "", src, flags=re.S)
+    src = re.sub(r"<(clipPath|mask)\b.*?</\1>", "", src, flags=re.S)
+    return re.sub(r'\s(?:clip-path|mask)="[^"]*"', "", src)
+
+
 def _svg_paths(path):
     """SVG 를 가져와 도형마다 (평면 삼각형 좌표 [(x, y)], 면, 선형 RGB) 를 그린 순서대로"""
     import addon_utils          # bpy 를 먼저 불러와야 쓸 수 있다
@@ -136,8 +145,8 @@ def _svg_paths(path):
     addon_utils.enable("io_curve_svg", default_set=False)
     with open(path, encoding="utf-8") as fh:
         src = fh.read()
-    flat = _flatten_gradients(src)
-    if flat != src:                                  # 그라데이션 채움은 가져오기가 검정으로 만든다 -> 평균색
+    flat = _prepare_svg(src)
+    if flat != src:                                  # 그라데이션 · 잘라내기 경로 정리본으로 가져온다
         fd, path = tempfile.mkstemp(suffix=".svg")
         with os.fdopen(fd, "w", encoding="utf-8") as fh:
             fh.write(flat)
@@ -187,8 +196,9 @@ def _logo_path(key, logo_dir=None):
     return None
 
 
-LOGO_PX = 160           # PNG 로고를 가장 긴 변 이 픽셀 수로 줄여 추적한다 (가장자리는 이 격자 계단이 된다)
+LOGO_AREA = 40000       # PNG 로고를 이 픽셀 수(가로 x 세로)로 맞춰 추적한다 (가장자리는 이 격자 계단이 된다)
 LOGO_COLORS = 6         # PNG 로고에서 나눌 최대 색 수 (가장 많이 쓰인 색부터)
+LOGO_MAX_FACES = 5000   # SVG 로고의 면이 이보다 많으면(아주 세밀한 원본) 그림으로 그린 뒤 PNG 처럼 추적한다
 
 
 def _srgb_to_linear(c):
@@ -218,13 +228,38 @@ def _rects(mask):
     return out
 
 
+def _raster_paths(paths):
+    """도형 목록을 LOGO_AREA 픽셀 그림(2배로 그린 뒤 줄여 가장자리를 부드럽게)으로 그려 PNG 처럼 다시 추적"""
+    import tempfile
+    from PIL import Image, ImageDraw
+    allp = np.array([p for pts, _, _ in paths for p in pts], dtype=np.float64)
+    lo, hi = allp.min(0), allp.max(0)
+    W, H = hi - lo
+    k = 2 * (LOGO_AREA / max(W * H, 1e-9)) ** 0.5
+    im = Image.new("RGBA", (max(1, round(W * k)), max(1, round(H * k))), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    for pts, faces, rgb in paths:
+        srgb = [12.92 * c if c <= 0.0031308 else 1.055 * c ** (1 / 2.4) - 0.055 for c in rgb]
+        col = tuple(int(round(255 * min(max(c, 0.0), 1.0))) for c in srgb) + (255,)
+        for f in faces:
+            d.polygon([((pts[i][0] - lo[0]) * k, (hi[1] - pts[i][1]) * k) for i in f], fill=col)
+    im = im.resize((max(1, im.size[0] // 2), max(1, im.size[1] // 2)), Image.LANCZOS)
+    fd, tmp = tempfile.mkstemp(suffix=".png")
+    os.close(fd)
+    im.save(tmp)
+    try:
+        return _png_paths(tmp)
+    finally:
+        os.remove(tmp)
+
+
 def _png_paths(path):
     """PNG 로고 -> 색마다 (격자 꼭짓점 [(x, -y)], 사각형 면, 선형 RGB). 각 색의 사각형은 같은 꼭짓점을 공유해
     안쪽 모서리가 서로 상쇄되므로 logo_parts 가 바깥 가장자리만 옆면으로 만든다"""
     from PIL import Image
     im = Image.open(path).convert("RGBA")
-    k = LOGO_PX / max(im.size)
-    if k < 1:
+    k = (LOGO_AREA / (im.size[0] * im.size[1])) ** 0.5
+    if abs(k - 1) > 1e-6:                              # 작은 그림은 부드럽게 키운 뒤 나눠야 가장자리가 덜 각진다
         im = im.resize((max(1, round(im.size[0] * k)), max(1, round(im.size[1] * k))), Image.LANCZOS)
     a = np.asarray(im, dtype=np.float64) / 255.0
     opaque = a[..., 3] >= 0.5
@@ -234,8 +269,18 @@ def _png_paths(path):
     q = np.minimum((rgb * 255).astype(int) // 32, 7)
     key = q[:, 0] * 64 + q[:, 1] * 8 + q[:, 2]
     counts = np.bincount(key, minlength=512)
-    top = [t for t in np.argsort(-counts)[:LOGO_COLORS] if counts[t] >= 0.01 * len(rgb)]
-    centers = [rgb[key == t].mean(0) for t in top]
+    top = [t for t in np.argsort(-counts) if counts[t] >= 0.01 * len(rgb)]
+    centers, weights = [], []
+    for t in top:                                     # 비슷한 색(가장자리 번짐 · 그림자)은 많은 쪽으로 합친다
+        c, n = rgb[key == t].mean(0), counts[t]
+        near = [i for i, m in enumerate(centers) if np.linalg.norm(m - c) < 0.12]
+        if near:
+            i = near[0]
+            centers[i] = (centers[i] * weights[i] + c * n) / (weights[i] + n)
+            weights[i] += n
+        elif len(centers) < LOGO_COLORS:
+            centers.append(c)
+            weights.append(n)
     label = np.full(opaque.shape, -1)
     dist = np.stack([np.linalg.norm(rgb - c, axis=1) for c in centers], 1)
     label[opaque] = dist.argmin(1)
@@ -431,6 +476,10 @@ def logo_parts(path, max_w, max_h, depth=0.03, tint=None, font=None):
         paths = _svg_simple(path, font)
         if paths is None:                              # 곡선 경로 등: 블렌더 SVG 가져오기
             paths = _svg_paths(path)
+        if paths and sum(len(f) for _, f, _ in paths) > LOGO_MAX_FACES:
+            traced = _raster_paths(paths)               # 면이 더 적을 때만 바꾼다 (잔무늬가 많으면 오히려 는다)
+            if traced and sum(len(f) for _, f, _ in traced) < sum(len(f) for _, f, _ in paths):
+                paths = traced
     if not paths:
         return None
     allp = np.array([p for pts, _, _ in paths for p in pts], dtype=np.float64)

@@ -7,7 +7,9 @@
   그린 순서대로 조금씩 앞으로 쌓이므로 겹친 색도 깜빡이지 않습니다.
 - 로고가 간판 바탕색에 묻히면(밝기 대비 3:1 미만) 그 간판은 흰 바탕이 되고 보조 문구는 로고 색이 됩니다.
 - 채움 색이 없는 한 가지 색(검정) SVG 는 `kit.LOGO_TINT` 의 브랜드 색으로 칠합니다.
-- 크기 · 비율은 자동으로 간판 자리에 맞춥니다 (가로 · 세로 중 꽉 차는 쪽 기준).
+- 크기 · 비율은 자동으로 간판 자리에 맞춥니다 (가로 · 세로 중 꽉 차는 쪽 기준). 세로형 · 원형 엠블럼(가로 / 세로 < 1.6)은
+  간판 왼쪽에 크게 두고 오른쪽에 매장 이름을 씁니다.
+- 아주 세밀한 SVG(면 5,000개 초과)는 그림으로 그려 색별로 다시 추적해 면 수를 줄입니다 (더 적어질 때만).
 - 다시 굽기: `blender -b --python assets.py -- --only IlsanGS25,IlsanCornerTower02` (해당 에셋만)
 
 상표 사용: 이 키트는 상표권자의 사용 허가를 받은 **비영리** 프로젝트로 실제 상표를 씁니다 (저장소 소유자 확인).
@@ -23,25 +25,25 @@
 | `cu` | CU | `IlsanCU`, `IlsanCornerTower01` 1층 | ✅ 워드마크 시안 (제공 파일) |
 | `7eleven` | 세븐일레븐 | `IlsanShop01` | ✅ 워드마크 시안 (제공 파일) |
 | `emart24` | 이마트24 | `IlsanEmart24` | ✅ 워드마크 시안 (제공 파일) |
-| `parisbaguette` | 파리바게뜨 | `IlsanParisBaguette` | ✅ 워드마크 시안 (제공 파일) |
-| `baskinrobbins` | 배스킨라빈스 | `IlsanBaskin` | ✅ 워드마크 시안 (제공 파일) |
+| `parisbaguette` | 파리바게뜨 | `IlsanParisBaguette` | ✅ 실제 로고 (제공 PNG) |
+| `baskinrobbins` | 배스킨라빈스 | `IlsanBaskin` | ✅ 실제 로고 (제공 SVG, BR 엠블럼 + 이름) |
 | `composecoffee` | 컴포즈커피 | `IlsanCompose` | ✅ 워드마크 시안 (제공 파일) |
 | `megacoffee` | 메가MGC커피 | `IlsanCornerTower01` 1층 | ✅ 워드마크 시안 (제공 파일) |
-| `ediya` | 이디야커피 | `IlsanCornerTower02` 1층 | ✅ 워드마크 시안 (제공 파일) |
-| `oliveyoung` | 올리브영 | `IlsanOliveDaiso` 1층 | ✅ 워드마크 시안 (제공 파일) |
-| `daiso` | 다이소 | `IlsanOliveDaiso` 옆 · 옥상 간판 | ✅ 워드마크 시안 (제공 파일) |
+| `ediya` | 이디야커피 | `IlsanCornerTower02` 1층 | ✅ 실제 로고 (제공 SVG, 원형 엠블럼 + 이름) |
+| `oliveyoung` | 올리브영 | `IlsanOliveDaiso` 1층 | ✅ 실제 로고 (제공 SVG) |
+| `daiso` | 다이소 | `IlsanOliveDaiso` 옆 · 옥상 간판 | ✅ 실제 로고 (제공 SVG) |
 | `bbq` | BBQ | `IlsanBBQ` | ✅ 실제 로고 (제공 파일, 금색 그라데이션은 평균색) |
-| `kyochon` | 교촌치킨 | `IlsanChicken01` | ✅ 워드마크 시안 (제공 파일) |
-| `kimbapcheonguk` | 김밥천국 | `IlsanMixed01` 1층 | ✅ 워드마크 시안 (제공 파일) |
+| `kyochon` | 교촌치킨 | `IlsanChicken01` | ✅ 실제 로고 (제공 SVG) |
+| `kimbapcheonguk` | 김밥천국 | `IlsanMixed01` 1층 | ✅ 실제 로고 (제공 SVG) |
 | `mg` | MG새마을금고 | `IlsanMGBank` 1층 간판 | ✅ 워드마크 시안 (제공 파일) |
 | `angelinus` | 엔제리너스 | `IlsanTerracePark01` 1층 | ✅ 워드마크 시안 (제공 파일) |
-| `pascucci` | 파스쿠찌 | `IlsanTerracePark01` 1층 | ✅ 워드마크 시안 (제공 파일) |
-| `gongcha` | 공차 | `IlsanTerracePark01` 1층 | ✅ 워드마크 시안 (제공 파일) |
-| `bonggubeer` | 봉구비어 | `IlsanTerracePark02` 1층 | ✅ 워드마크 시안 (제공 파일) |
-| `droptop` | 드롭탑 | `IlsanTerracePark02` 1층 | ✅ 워드마크 시안 (제공 파일) |
+| `pascucci` | 파스쿠찌 | `IlsanTerracePark01` 1층 | ✅ 실제 로고 (제공 SVG, 원형 엠블럼 + 이름) |
+| `gongcha` | 공차 | `IlsanTerracePark01` 1층 | ✅ 실제 로고 (제공 SVG, 아주 세밀해 그림으로 추적) |
+| `bonggubeer` | 봉구비어 | `IlsanTerracePark02` 1층 | ✅ 실제 로고 (제공 이미지 93×30 을 PNG 로 추적, 노랑으로 칠함) |
+| `droptop` | 드롭탑 | `IlsanTerracePark02` 1층 | ✅ 실제 로고 (제공 SVG, 엠블럼 + 이름) |
 | `ogada` | 오가다 | `IlsanTerracePark02` 1층 | ✅ 워드마크 시안 (제공 파일) |
 
 간판 문구와 키의 연결은 `designs.BRAND_LOGOS` 에 있습니다.
 
-'워드마크 시안' 21개는 함께 받은 brand_svgs_23.zip 의 파일로, 그 안내문대로 공식 원본 로고가 아니라 브랜드 색 글자 + 밑줄 · 바탕으로 만든
+'워드마크 시안'은 함께 받은 brand_svgs_23.zip 의 파일로, 그 안내문대로 공식 원본 로고가 아니라 브랜드 색 글자 + 밑줄 · 바탕으로 만든
 스타일화된 시안입니다 (`pascucci.svg` 의 글자 오타 'P社SCUCCI' 는 PASCUCCI 로 고쳤습니다). 공식 SVG 를 같은 이름으로 덮어쓰면 그대로 바뀝니다.

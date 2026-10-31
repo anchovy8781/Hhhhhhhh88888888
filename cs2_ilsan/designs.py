@@ -90,15 +90,24 @@ class Building:
         return fn(key, max_w, max_h, depth) if fn else None
 
     def logo_board(self, mat, parts):
-        """로고가 간판 바탕색에 묻히면(어느 색 조각도 바탕과 밝기 대비 3:1 미만) 흰 간판으로 바꾼 재질 이름"""
+        """로고가 간판 바탕색에 묻히면(바탕과 밝기 대비 3:1 미만인 색이 로고 넓이의 30% 넘게) 흰 간판으로 바꾼 재질 이름"""
         if not parts:
             return mat
         board = self.mats.get(mat, materials.BASE.get(mat, {})).get("color", (0.8, 0.8, 0.8))
         lum = lambda c: 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]      # noqa: E731  (선형 RGB)
         ratio = lambda a, b: (max(a, b) + 0.05) / (min(a, b) + 0.05)      # noqa: E731
-        if max(ratio(lum(p[5]), lum(board)) for p in parts) >= 3.0:
+        def area(part):                                    # 앞면 넓이 (옆면은 평면에 투영하면 0)
+            v, fs = part[0], part[1]
+            return sum(abs(sum(v[f[i]][0] * v[f[(i + 1) % len(f)]][1] - v[f[(i + 1) % len(f)]][0] * v[f[i]][1]
+                               for i in range(len(f)))) / 2 for f in fs)
+        areas = [area(p) for p in parts]
+        white = (0.92, 0.92, 0.90)
+
+        def low(bg):                                        # 바탕 bg 에 묻히는 로고 넓이 비율
+            return sum(a for a, p in zip(areas, parts) if ratio(lum(p[5]), lum(bg)) < 3.0) / max(sum(areas), 1e-9)
+        if low(board) <= 0.3 or low(white) >= low(board):  # 잘 보이거나, 흰 바탕이 더 낫지 않으면 그대로
             return mat
-        self.mats.setdefault("sign_logo_white", sign((0.92, 0.92, 0.90), 0.7))
+        self.mats.setdefault("sign_logo_white", sign(white, 0.7))
         return "sign_logo_white"
 
     def brand_text(self, f, text, u, z, d, max_w, max_h, depth, mat, emit=2.0, key=None):
@@ -327,7 +336,7 @@ class Building:
     def sign_band(self, side, u0, u1, z0, z1, text, sub=None, out=0.32, mat="sign", letters="letters", logo=None,
                   logo_emit=2.0):
         """가로 간판: 패널 + 테두리 + 입체 채널 글자 (+ 보조 문구). logo 키의 실제 로고(logos/<키>.svg)가 있으면
-        본 문구 대신 로고를 붙인다"""
+        본 문구 대신 로고를 붙인다. 세로형 · 원형 엠블럼(가로세로 1.6 미만)은 왼쪽에 크게, 오른쪽에 매장 이름"""
         f = self.face(side)
         if not f.fits(SIGN, u0 - 0.05, u1 + 0.05, z0 - 0.07, z1 + 0.07, 0, out + 0.12):
             raise ValueError(f"{side}: 간판 '{text}' 자리가 다른 요소와 겹칩니다")
@@ -335,6 +344,11 @@ class Building:
         logo = logo or BRAND_LOGOS.get(text)
         mw, mh, zc = (u1 - u0) * 0.86, h * (0.56 if sub else 0.66), z0 + h * (0.62 if sub else 0.5)
         parts = self.logo(logo, mw, mh, 0.04) if logo else None
+        emblem = bool(parts) and parts[0][2] < 1.6 * parts[0][3]
+        if emblem:
+            parts = self.logo(logo, mw, h * 0.84, 0.04)
+        tu0 = u0 + 0.4 + parts[0][2] if emblem else u0              # 글자 자리 (엠블럼 오른쪽)
+        tc, tw = (tu0 + u1) / 2, (u1 - tu0) * (0.9 if emblem else 0.86)
         board = self.logo_board(mat, parts)
         if board != mat:                                   # 흰 간판이 되면 보조 문구는 로고 색으로
             rgb = max((p[5] for p in parts), key=lambda c: -(0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]))
@@ -348,15 +362,16 @@ class Building:
         f.box(u0 - 0.04, u0, z0, z1, 0, out + 0.04, "frame_dark")
         f.box(u1, u1 + 0.04, z0, z1, 0, out + 0.04, "frame_dark")
         if parts:
-            self.put_logo(f, parts, logo, (u0 + u1) / 2, zc, out, emit=logo_emit, kind=None)
-        else:
-            t = self.letters(text, mw, mh, 0.05)
+            uc = u0 + 0.2 + parts[0][2] / 2 if emblem else (u0 + u1) / 2
+            self.put_logo(f, parts, logo, uc, z0 + h / 2 if emblem else zc, out, emit=logo_emit, kind=None)
+        if not parts or emblem:
+            t = self.letters(text, tw, mh, 0.05)
             if t is not None:
-                f.text(t, (u0 + u1) / 2, zc, out, letters, kind=None)
+                f.text(t, tc, zc, out, letters, kind=None)
         if sub:
-            t2 = self.letters(sub, (u1 - u0) * 0.7, h * 0.2, 0.03)
+            t2 = self.letters(sub, (u1 - tu0) * 0.7, h * 0.2, 0.03)
             if t2 is not None:
-                f.text(t2, (u0 + u1) / 2, z0 + h * 0.2, out, letters, kind=None)
+                f.text(t2, tc, z0 + h * 0.2, out, letters, kind=None)
         f.reserve(SIGN, u0 - 0.05, u1 + 0.05, z0 - 0.07, z1 + 0.07, 0, out + 0.12, "sign:" + text)
 
     def wall_text(self, side, text, u, z, max_w, max_h, mat="letters", extrude=0.06, logo=None, logo_emit=2.0):

@@ -287,7 +287,7 @@ def olive_daiso(text_fn=None):
     for px in (-7.0, -2.3, 2.3, 7.0):
         b.m.box(px - 0.07, px + 0.07, sy + 0.2, sy + 0.34, z, z + 4.0, "metal_dark")
         b.m.beam((px, sy + 0.27, z + 3.0), (px, sy + 1.6, z + 0.05), 0.06, 0.06, "metal_dark")
-    b.m.box(-8.0, 8.0, sy, sy + 0.2, z + 1.2, z + 3.9, "ds_board")
+    b.m.box(-8.0, 8.0, sy, sy + 0.2, z + 1.2, z + 3.9, b.logo_board("ds_board", b.logo("daiso", 13.0, 1.8, 0.08)))
     b.brand_text(Facade(b.m, "front", -8.0, 8.0, sy, sy + 0.2), "Daiso 다이소", 8.0, z + 2.55, 0.0, 13.0, 1.8, 0.08,
                  "letters_ds", key="daiso")
     b.roof_reserve("roof_sign", -8.1, 8.1, sy - 0.1, sy + 1.65, z, z + 4.0)
