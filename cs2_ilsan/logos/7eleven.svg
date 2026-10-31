@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="180" viewBox="0 0 600 180" role="img" aria-label="세븐일레븐">
+  <title>세븐일레븐</title>
+  <path d="M28 30 H572 V150 H28 Z" fill="#00843D"/>
+<path d="M28 30 H572 V67 H28 Z" fill="#F58220"/>
+<text x="300" y="126" text-anchor="middle" font-family="Arial,sans-serif" font-size="75" font-weight="900" fill="#fff">7-ELEVEN</text>
+</svg>

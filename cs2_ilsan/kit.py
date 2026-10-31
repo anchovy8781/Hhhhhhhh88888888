@@ -3,7 +3,9 @@
 면 방향은 geom 이 이미 바깥으로 맞춰 두므로 여기서는 법선을 다시 계산하지 않는다.
 """
 
+import math
 import os
+import re
 
 import bmesh
 import bpy
@@ -95,8 +97,8 @@ def text_fn_for(font, logo_dir=None):
     def logo(key, max_w, max_h, depth=0.03):
         k = (key, round(max_w, 3), round(max_h, 3), round(depth, 3))
         if k not in cache:
-            cache[k] = logo_parts(os.path.join(logo_dir or LOGO_DIR, key + ".svg"), max_w, max_h, depth,
-                                  LOGO_TINT.get(key))
+            cache[k] = logo_parts(_logo_path(key, logo_dir), max_w, max_h, depth,
+                                  LOGO_TINT.get(key), font)
         return cache[k]
     fit.logo = logo
     return fit
@@ -151,12 +153,259 @@ def _svg_paths(path):
     return out
 
 
-def logo_parts(path, max_w, max_h, depth=0.03, tint=None):
+def _logo_path(key, logo_dir=None):
+    """logos/<키>.svg 가 있으면 그것, 없으면 logos/<키>.png (둘 다 없으면 None)"""
+    base = os.path.join(logo_dir or LOGO_DIR, key)
+    for ext in (".svg", ".png"):
+        if os.path.isfile(base + ext):
+            return base + ext
+    return None
+
+
+LOGO_PX = 160           # PNG 로고를 가장 긴 변 이 픽셀 수로 줄여 추적한다 (가장자리는 이 격자 계단이 된다)
+LOGO_COLORS = 6         # PNG 로고에서 나눌 최대 색 수 (가장 많이 쓰인 색부터)
+
+
+def _srgb_to_linear(c):
+    return np.where(c <= 0.04045, c / 12.92, ((c + 0.055) / 1.055) ** 2.4)
+
+
+def _rects(mask):
+    """True 픽셀 덩어리를 가로 줄 구간을 세로로 이어 붙인 직사각형 (r0, r1, c0, c1) 목록"""
+    H, W = mask.shape
+    out, active = [], {}
+    for r in range(H + 1):
+        runs = set()
+        if r < H:
+            c = 0
+            while c < W:
+                if mask[r, c]:
+                    s = c
+                    while c < W and mask[r, c]:
+                        c += 1
+                    runs.add((s, c))
+                else:
+                    c += 1
+        for key in [k for k in active if k not in runs]:
+            out.append((active.pop(key), r, key[0], key[1]))
+        for key in runs:
+            active.setdefault(key, r)
+    return out
+
+
+def _png_paths(path):
+    """PNG 로고 -> 색마다 (격자 꼭짓점 [(x, -y)], 사각형 면, 선형 RGB). 각 색의 사각형은 같은 꼭짓점을 공유해
+    안쪽 모서리가 서로 상쇄되므로 logo_parts 가 바깥 가장자리만 옆면으로 만든다"""
+    from PIL import Image
+    im = Image.open(path).convert("RGBA")
+    k = LOGO_PX / max(im.size)
+    if k < 1:
+        im = im.resize((max(1, round(im.size[0] * k)), max(1, round(im.size[1] * k))), Image.LANCZOS)
+    a = np.asarray(im, dtype=np.float64) / 255.0
+    opaque = a[..., 3] >= 0.5
+    rgb = a[..., :3][opaque]
+    if len(rgb) == 0:
+        return []
+    q = np.minimum((rgb * 255).astype(int) // 32, 7)
+    key = q[:, 0] * 64 + q[:, 1] * 8 + q[:, 2]
+    counts = np.bincount(key, minlength=512)
+    top = [t for t in np.argsort(-counts)[:LOGO_COLORS] if counts[t] >= 0.01 * len(rgb)]
+    centers = [rgb[key == t].mean(0) for t in top]
+    label = np.full(opaque.shape, -1)
+    dist = np.stack([np.linalg.norm(rgb - c, axis=1) for c in centers], 1)
+    label[opaque] = dist.argmin(1)
+    out = []
+    for j, c in enumerate(centers):
+        verts, index, faces = [], {}, []
+
+        def v(x, y):
+            if (x, y) not in index:
+                index[(x, y)] = len(verts)
+                verts.append((float(x), float(-y)))
+            return index[(x, y)]
+        for r0, r1, c0, c1 in _rects(label == j):
+            faces.append((v(c0, r0), v(c1, r0), v(c1, r1), v(c0, r1)))
+        if faces:
+            out.append((verts, faces, tuple(float(x) for x in _srgb_to_linear(c))))
+    out.sort(key=lambda p: -len(p[1]))
+    return out
+
+
+SIMPLE_SVG = {"svg", "title", "desc", "g", "rect", "circle", "ellipse", "path", "text", "line", "polygon"}
+
+
+def _hex_linear(c):
+    """'#rgb' · '#rrggbb' -> 선형 RGB (없음 · none -> None)"""
+    if not c or c == "none" or not c.startswith("#"):
+        return {"white": (1.0, 1.0, 1.0), "black": (0.0, 0.0, 0.0)}.get(c)
+    h = c[1:]
+    if len(h) == 3:
+        h = "".join(ch * 2 for ch in h)
+    rgb = np.array([int(h[i:i + 2], 16) / 255.0 for i in (0, 2, 4)])
+    return tuple(float(x) for x in _srgb_to_linear(rgb))
+
+
+def _ring(cx, cy, rx, ry, n=48):
+    return [(cx + rx * math.cos(2 * math.pi * i / n), cy + ry * math.sin(2 * math.pi * i / n)) for i in range(n)]
+
+
+def _rrect(x, y, w, h, r, n=6):
+    """둥근 모서리 사각형 꼭짓점 (SVG 좌표, y 아래)"""
+    r = max(0.0, min(r, w / 2, h / 2))
+    if r < 1e-6:
+        return [(x, y), (x + w, y), (x + w, y + h), (x, y + h)]
+    pts = []
+    for cx, cy, a0 in ((x + w - r, y + r, -90), (x + w - r, y + h - r, 0), (x + r, y + h - r, 90), (x + r, y + r, 180)):
+        for i in range(n + 1):
+            a = math.radians(a0 + 90 * i / n)
+            pts.append((cx + r * math.cos(a), cy + r * math.sin(a)))
+    return pts
+
+
+def _capsule(p, q, sw, round_cap, n=8):
+    """선분 p-q 를 굵기 sw 로 칠한 다각형 (둥근 끝이면 반원)"""
+    dx, dy = q[0] - p[0], q[1] - p[1]
+    L = math.hypot(dx, dy) or 1e-9
+    ux, uy = dx / L, dy / L
+    nx, ny = -uy, ux
+    h = sw / 2
+    if not round_cap:
+        return [(p[0] + nx * h, p[1] + ny * h), (q[0] + nx * h, q[1] + ny * h),
+                (q[0] - nx * h, q[1] - ny * h), (p[0] - nx * h, p[1] - ny * h)]
+    a = math.atan2(ny, nx)
+    pts = [(q[0] + h * math.cos(a - math.pi * i / n), q[1] + h * math.sin(a - math.pi * i / n)) for i in range(n + 1)]
+    pts += [(p[0] + h * math.cos(a + math.pi - math.pi * i / n), p[1] + h * math.sin(a + math.pi - math.pi * i / n))
+            for i in range(n + 1)]
+    return pts
+
+
+def _path_points(d):
+    """M · L · H · V · Z (대 · 소문자) 만 쓰는 경로 -> [(점 목록, 닫힘)]. 다른 명령이 있으면 None"""
+    toks = re.findall(r"[A-Za-z]|-?(?:\d+\.?\d*|\.\d+)(?:[eE]-?\d+)?", d)
+    subs, cur, x, y, cmd, i = [], None, 0.0, 0.0, None, 0
+    while i < len(toks):
+        t = toks[i]
+        if t.isalpha():
+            cmd = t
+            i += 1
+            if cmd in "Zz" and cur:
+                subs.append((cur, True))
+                cur = None
+                continue
+            if cmd not in "MmLlHhVvZz":
+                return None
+            continue
+        rel = cmd.islower()
+        if cmd in "Mm" or cmd in "Ll":
+            nx_, ny_ = float(toks[i]), float(toks[i + 1])
+            i += 2
+            x, y = (x + nx_, y + ny_) if rel else (nx_, ny_)
+            if cmd in "Mm":
+                if cur:
+                    subs.append((cur, False))
+                cur = [(x, y)]
+                cmd = "l" if rel else "L"
+            else:
+                cur.append((x, y))
+        elif cmd in "Hh":
+            v = float(toks[i]); i += 1
+            x = x + v if rel else v
+            cur.append((x, y))
+        elif cmd in "Vv":
+            v = float(toks[i]); i += 1
+            y = y + v if rel else v
+            cur.append((x, y))
+        else:
+            return None
+    if cur:
+        subs.append((cur, False))
+    return subs
+
+
+def _svg_simple(path, font):
+    """사각형 · 원 · 직선 경로 · 글자만 쓰는 간단한 SVG (워드마크) -> 도형마다 (점, 면, 선형 RGB), 그린 순서대로.
+    블렌더 SVG 가져오기가 버리는 <text> 와 테두리선(stroke)을 살린다. 지원하지 않는 요소가 있으면 None"""
+    import xml.etree.ElementTree as ET
+    root = ET.parse(path).getroot()
+    els = list(root.iter())
+    tags = [e.tag.split("}")[-1] for e in els]
+    if not set(tags) <= SIMPLE_SVG:
+        return None
+    out = []
+
+    def poly(pts, rgb, hole=None):
+        """y 를 뒤집은 다각형 (hole 이 있으면 같은 꼭짓점 수의 안쪽 고리와 사각형 띠)"""
+        if rgb is None or len(pts) < 3:
+            return
+        P = [(px, -py) for px, py in pts]
+        if hole is None:
+            out.append((P, [tuple(range(len(P)))], rgb))
+            return
+        Q = [(px, -py) for px, py in hole]
+        n = len(P)
+        out.append((P + Q, [(i, (i + 1) % n, n + (i + 1) % n, n + i) for i in range(n)], rgb))
+
+    for e, tag in zip(els, tags):
+        g = e.get
+        fill, stroke = _hex_linear(g("fill", "#000")), _hex_linear(g("stroke", "none"))
+        sw = float(g("stroke-width", "1"))
+        if tag == "rect":
+            x, y, w, h = (float(g(k, "0")) for k in ("x", "y", "width", "height"))
+            r = float(g("rx", g("ry", "0")))
+            poly(_rrect(x, y, w, h, r), fill)
+            if stroke is not None:
+                poly(_rrect(x - sw / 2, y - sw / 2, w + sw, h + sw, r + sw / 2), stroke,
+                     _rrect(x + sw / 2, y + sw / 2, w - sw, h - sw, max(r - sw / 2, 0.0)))
+        elif tag in ("circle", "ellipse"):
+            cx, cy = float(g("cx", "0")), float(g("cy", "0"))
+            rx = float(g("r", g("rx", "0")))
+            ry = float(g("r", g("ry", "0")))
+            poly(_ring(cx, cy, rx, ry), fill)
+            if stroke is not None:
+                poly(_ring(cx, cy, rx + sw / 2, ry + sw / 2), stroke, _ring(cx, cy, rx - sw / 2, ry - sw / 2))
+        elif tag in ("path", "line", "polygon"):
+            if tag == "path":
+                subs = _path_points(g("d", ""))
+                if subs is None:
+                    return None
+            elif tag == "line":
+                subs = [([(float(g("x1", "0")), float(g("y1", "0"))), (float(g("x2", "0")), float(g("y2", "0")))],
+                         False)]
+            else:
+                nums = [float(v) for v in re.findall(r"-?[\d.]+", g("points", ""))]
+                subs = [(list(zip(nums[0::2], nums[1::2])), True)]
+            if tag != "line" and g("fill") != "none" and fill is not None:
+                for pts, _ in subs:
+                    poly(pts, fill)
+            if stroke is not None:
+                rc = g("stroke-linecap") == "round"
+                for pts, closed in subs:
+                    seg = pts + ([pts[0]] if closed else [])
+                    for a, b in zip(seg, seg[1:]):
+                        poly(_capsule(a, b, sw, rc), stroke)
+        elif tag == "text" and font is not None and (e.text or "").strip():
+            t = text_mesh(e.text.strip(), font, float(g("font-size", "16")), 0.0)
+            if t is None or fill is None:
+                continue
+            verts, faces, w, h, _ = t
+            x, y, fs = float(g("x", "0")), float(g("y", "0")), float(g("font-size", "16"))
+            cx = {"middle": x, "end": x - w / 2}.get(g("text-anchor", "start"), x + w / 2)
+            cy = -(y - 0.36 * fs)                         # 기준선 위 대문자 높이의 가운데
+            out.append(([(cx + vx, cy + vy) for vx, vy, _ in verts], [tuple(f) for f in faces], fill))
+    return out
+
+
+def logo_parts(path, max_w, max_h, depth=0.03, tint=None, font=None):
     """SVG 로고 -> 색별 조각 [(verts, faces, 폭, 높이, 두께, 선형 RGB)]. 모든 조각이 같은 중심 · 배율을 써서
     그대로 겹쳐 놓으면 로고가 된다. 면은 앞면 + 옆면만 (뒷면은 간판에 붙어 보이지 않는다). 파일이 없으면 None"""
-    if not os.path.isfile(path):
+    if not path or not os.path.isfile(path):
         return None
-    paths = _svg_paths(path)
+    if path.lower().endswith(".png"):
+        paths = _png_paths(path)
+    else:
+        paths = _svg_simple(path, font)
+        if paths is None:                              # 곡선 경로 등: 블렌더 SVG 가져오기
+            paths = _svg_paths(path)
     if not paths:
         return None
     allp = np.array([p for pts, _, _ in paths for p in pts], dtype=np.float64)

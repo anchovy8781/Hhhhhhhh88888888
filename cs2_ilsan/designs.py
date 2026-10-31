@@ -89,6 +89,18 @@ class Building:
         fn = getattr(self.text_fn, "logo", None)
         return fn(key, max_w, max_h, depth) if fn else None
 
+    def logo_board(self, mat, parts):
+        """로고가 간판 바탕색에 묻히면(어느 색 조각도 바탕과 밝기 대비 3:1 미만) 흰 간판으로 바꾼 재질 이름"""
+        if not parts:
+            return mat
+        board = self.mats.get(mat, materials.BASE.get(mat, {})).get("color", (0.8, 0.8, 0.8))
+        lum = lambda c: 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]      # noqa: E731  (선형 RGB)
+        ratio = lambda a, b: (max(a, b) + 0.05) / (min(a, b) + 0.05)      # noqa: E731
+        if max(ratio(lum(p[5]), lum(board)) for p in parts) >= 3.0:
+            return mat
+        self.mats.setdefault("sign_logo_white", sign((0.92, 0.92, 0.90), 0.7))
+        return "sign_logo_white"
+
     def brand_text(self, f, text, u, z, d, max_w, max_h, depth, mat, emit=2.0, key=None):
         """손으로 만든 간판 위 브랜드 이름: 실제 로고가 있으면 로고, 없으면 글자 (예약은 하지 않는다)"""
         key = key or BRAND_LOGOS.get(text)
@@ -319,15 +331,22 @@ class Building:
         f = self.face(side)
         if not f.fits(SIGN, u0 - 0.05, u1 + 0.05, z0 - 0.07, z1 + 0.07, 0, out + 0.12):
             raise ValueError(f"{side}: 간판 '{text}' 자리가 다른 요소와 겹칩니다")
+        h = z1 - z0
+        logo = logo or BRAND_LOGOS.get(text)
+        mw, mh, zc = (u1 - u0) * 0.86, h * (0.56 if sub else 0.66), z0 + h * (0.62 if sub else 0.5)
+        parts = self.logo(logo, mw, mh, 0.04) if logo else None
+        board = self.logo_board(mat, parts)
+        if board != mat:                                   # 흰 간판이 되면 보조 문구는 로고 색으로
+            rgb = max((p[5] for p in parts), key=lambda c: -(0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]))
+            letters = f"letters_logo_{logo}_sub"
+            self.mats[letters] = {"color": rgb, "rough": 0.4, "emit": tuple(min(1.0, c * 1.25 + 0.02) for c in rgb),
+                                  "emit_strength": 1.0}
+        mat = board
         f.box(u0, u1, z0, z1, 0, out, mat)
         f.box(u0 - 0.04, u1 + 0.04, z1, z1 + 0.06, 0, out + 0.04, "frame_dark")
         f.box(u0 - 0.04, u1 + 0.04, z0 - 0.06, z0, 0, out + 0.04, "frame_dark")
         f.box(u0 - 0.04, u0, z0, z1, 0, out + 0.04, "frame_dark")
         f.box(u1, u1 + 0.04, z0, z1, 0, out + 0.04, "frame_dark")
-        h = z1 - z0
-        logo = logo or BRAND_LOGOS.get(text)
-        mw, mh, zc = (u1 - u0) * 0.86, h * (0.56 if sub else 0.66), z0 + h * (0.62 if sub else 0.5)
-        parts = self.logo(logo, mw, mh, 0.04) if logo else None
         if parts:
             self.put_logo(f, parts, logo, (u0 + u1) / 2, zc, out, emit=logo_emit, kind=None)
         else:
@@ -392,10 +411,11 @@ class Building:
         f = self.face(side)
         if not f.fits(SIGN, u - w / 2 - 0.03, u + w / 2 + 0.03, z, z + h, 0, out + 0.08):
             return False
-        f.box(u - w / 2, u + w / 2, z, z + h, 0, out, mat)
-        f.box(u - w / 2 - 0.03, u + w / 2 + 0.03, z, z + h, 0, 0.02, "frame_dark")
         logo = logo or BRAND_LOGOS.get(text)
         parts = self.logo(logo, w * 0.84, h * 0.6, 0.03) if logo else None
+        mat = self.logo_board(mat, parts)
+        f.box(u - w / 2, u + w / 2, z, z + h, 0, out, mat)
+        f.box(u - w / 2 - 0.03, u + w / 2 + 0.03, z, z + h, 0, 0.02, "frame_dark")
         if parts:
             self.put_logo(f, parts, logo, u, z + h / 2, out, emit=logo_emit, kind=None)
         else:
