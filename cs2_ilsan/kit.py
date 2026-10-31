@@ -114,12 +114,37 @@ LOGO_TINT = {"starbucks": (0.0, 0.125, 0.045)}
 LOGO_LAYER = 0.002      # SVG 에서 나중에 그린 도형일수록 이만큼 앞으로 (겹친 색이 깜빡이지 않게)
 
 
+def _flatten_gradients(src):
+    """fill="url(#id)" · fill:url(#id) 를 그 그라데이션 색 지점들의 평균색으로 바꾼 SVG 문자열"""
+    grads = {}
+    for gid, body in re.findall(r'<(?:linear|radial)Gradient[^>]*\bid="([^"]+)"[^>]*>(.*?)</(?:linear|radial)Gradient>',
+                                src, re.S):
+        cols = [c for c in re.findall(r'stop-color[:=]\s*"?(#[0-9a-fA-F]{3,6})', body)]
+        if cols:
+            rgb = [[int((c[1:] if len(c) == 7 else "".join(ch * 2 for ch in c[1:]))[i:i + 2], 16) for i in (0, 2, 4)]
+                   for c in cols]
+            grads[gid] = "#%02x%02x%02x" % tuple(round(sum(v[i] for v in rgb) / len(rgb)) for i in range(3))
+    for gid, hexc in grads.items():
+        src = re.sub(r"url\(#%s\)" % re.escape(gid), hexc, src)
+    return src
+
+
 def _svg_paths(path):
     """SVG 를 가져와 도형마다 (평면 삼각형 좌표 [(x, y)], 면, 선형 RGB) 를 그린 순서대로"""
     import addon_utils          # bpy 를 먼저 불러와야 쓸 수 있다
+    import tempfile
     addon_utils.enable("io_curve_svg", default_set=False)
+    with open(path, encoding="utf-8") as fh:
+        src = fh.read()
+    flat = _flatten_gradients(src)
+    if flat != src:                                  # 그라데이션 채움은 가져오기가 검정으로 만든다 -> 평균색
+        fd, path = tempfile.mkstemp(suffix=".svg")
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            fh.write(flat)
     before_obj, before_mat = set(bpy.data.objects), set(bpy.data.materials)
     bpy.ops.import_curve.svg(filepath=path)
+    if flat != src:
+        os.remove(path)
     new = sorted((o for o in bpy.data.objects if o not in before_obj), key=lambda o: o.name)
     for o in new:
         if o.type == 'CURVE':
