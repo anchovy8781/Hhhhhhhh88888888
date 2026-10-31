@@ -1,4 +1,4 @@
-# 실제 브랜드 로고 (SVG)
+# 실제 브랜드 로고 (SVG · PNG)
 
 이 폴더에 `<키>.svg` 를 넣고 에셋을 다시 구우면, 그 브랜드 간판의 문구 자리에 **실제 로고**가 입체로 붙습니다
 (간판 글자처럼 도형이라 텍스처 해상도와 상관없이 또렷합니다). 파일이 없는 브랜드는 지금처럼 브랜드 색 + 글자로 만듭니다.
@@ -17,29 +17,29 @@
 |---|---|---|---|
 | `starbucks` | 스타벅스 사이렌 | `IlsanStarbucksDT` 원형 엠블럼 5곳 (정면 · 양옆 · 계단실 · 기둥 간판) | ✅ 실제 로고 (Simple Icons 도형) |
 | `starbucks_wordmark` | STARBUCKS 글자 로고 | `IlsanStarbucksDT` 정면 글자 | |
-| `homeplus` | 홈플러스 | `IlsanHomeplus` 정면 · 옆 큰 글자 || ✅ 실제 로고 (제공 파일) |
-| `gs25` | GS25 | `IlsanGS25`, `IlsanCornerTower02` 1층, `IlsanGasStation` 매장 || ✅ 워드마크 시안 (제공 파일) |
-| `gscaltex` | GS칼텍스 | `IlsanGasStation` 캐노피 3면 · 가격 기둥 || ✅ 워드마크 시안 (제공 파일) |
-| `cu` | CU | `IlsanCU`, `IlsanCornerTower01` 1층 || ✅ 워드마크 시안 (제공 파일) |
-| `7eleven` | 세븐일레븐 | `IlsanShop01` || ✅ 워드마크 시안 (제공 파일) |
-| `emart24` | 이마트24 | `IlsanEmart24` || ✅ 워드마크 시안 (제공 파일) |
-| `parisbaguette` | 파리바게뜨 | `IlsanParisBaguette` || ✅ 워드마크 시안 (제공 파일) |
-| `baskinrobbins` | 배스킨라빈스 | `IlsanBaskin` || ✅ 워드마크 시안 (제공 파일) |
-| `composecoffee` | 컴포즈커피 | `IlsanCompose` || ✅ 워드마크 시안 (제공 파일) |
-| `megacoffee` | 메가MGC커피 | `IlsanCornerTower01` 1층 || ✅ 워드마크 시안 (제공 파일) |
-| `ediya` | 이디야커피 | `IlsanCornerTower02` 1층 || ✅ 워드마크 시안 (제공 파일) |
-| `oliveyoung` | 올리브영 | `IlsanOliveDaiso` 1층 || ✅ 워드마크 시안 (제공 파일) |
-| `daiso` | 다이소 | `IlsanOliveDaiso` 옆 · 옥상 간판 || ✅ 워드마크 시안 (제공 파일) |
-| `bbq` | BBQ | `IlsanBBQ` || ✅ 실제 로고 (제공 파일, 금색 그라데이션은 평균색) |
-| `kyochon` | 교촌치킨 | `IlsanChicken01` || ✅ 워드마크 시안 (제공 파일) |
-| `kimbapcheonguk` | 김밥천국 | `IlsanMixed01` 1층 || ✅ 워드마크 시안 (제공 파일) |
-| `mg` | MG새마을금고 | `IlsanMGBank` 1층 간판 || ✅ 워드마크 시안 (제공 파일) |
-| `angelinus` | 엔제리너스 | `IlsanTerracePark01` 1층 || ✅ 워드마크 시안 (제공 파일) |
-| `pascucci` | 파스쿠찌 | `IlsanTerracePark01` 1층 || ✅ 워드마크 시안 (제공 파일) |
-| `gongcha` | 공차 | `IlsanTerracePark01` 1층 || ✅ 워드마크 시안 (제공 파일) |
-| `bonggubeer` | 봉구비어 | `IlsanTerracePark02` 1층 || ✅ 워드마크 시안 (제공 파일) |
-| `droptop` | 드롭탑 | `IlsanTerracePark02` 1층 || ✅ 워드마크 시안 (제공 파일) |
-| `ogada` | 오가다 | `IlsanTerracePark02` 1층 || ✅ 워드마크 시안 (제공 파일) |
+| `homeplus` | 홈플러스 | `IlsanHomeplus` 정면 · 옆 큰 글자 | ✅ 실제 로고 (제공 파일) |
+| `gs25` | GS25 | `IlsanGS25`, `IlsanCornerTower02` 1층, `IlsanGasStation` 매장 | ✅ 워드마크 시안 (제공 파일) |
+| `gscaltex` | GS칼텍스 | `IlsanGasStation` 캐노피 3면 · 가격 기둥 | ✅ 워드마크 시안 (제공 파일) |
+| `cu` | CU | `IlsanCU`, `IlsanCornerTower01` 1층 | ✅ 워드마크 시안 (제공 파일) |
+| `7eleven` | 세븐일레븐 | `IlsanShop01` | ✅ 워드마크 시안 (제공 파일) |
+| `emart24` | 이마트24 | `IlsanEmart24` | ✅ 워드마크 시안 (제공 파일) |
+| `parisbaguette` | 파리바게뜨 | `IlsanParisBaguette` | ✅ 워드마크 시안 (제공 파일) |
+| `baskinrobbins` | 배스킨라빈스 | `IlsanBaskin` | ✅ 워드마크 시안 (제공 파일) |
+| `composecoffee` | 컴포즈커피 | `IlsanCompose` | ✅ 워드마크 시안 (제공 파일) |
+| `megacoffee` | 메가MGC커피 | `IlsanCornerTower01` 1층 | ✅ 워드마크 시안 (제공 파일) |
+| `ediya` | 이디야커피 | `IlsanCornerTower02` 1층 | ✅ 워드마크 시안 (제공 파일) |
+| `oliveyoung` | 올리브영 | `IlsanOliveDaiso` 1층 | ✅ 워드마크 시안 (제공 파일) |
+| `daiso` | 다이소 | `IlsanOliveDaiso` 옆 · 옥상 간판 | ✅ 워드마크 시안 (제공 파일) |
+| `bbq` | BBQ | `IlsanBBQ` | ✅ 실제 로고 (제공 파일, 금색 그라데이션은 평균색) |
+| `kyochon` | 교촌치킨 | `IlsanChicken01` | ✅ 워드마크 시안 (제공 파일) |
+| `kimbapcheonguk` | 김밥천국 | `IlsanMixed01` 1층 | ✅ 워드마크 시안 (제공 파일) |
+| `mg` | MG새마을금고 | `IlsanMGBank` 1층 간판 | ✅ 워드마크 시안 (제공 파일) |
+| `angelinus` | 엔제리너스 | `IlsanTerracePark01` 1층 | ✅ 워드마크 시안 (제공 파일) |
+| `pascucci` | 파스쿠찌 | `IlsanTerracePark01` 1층 | ✅ 워드마크 시안 (제공 파일) |
+| `gongcha` | 공차 | `IlsanTerracePark01` 1층 | ✅ 워드마크 시안 (제공 파일) |
+| `bonggubeer` | 봉구비어 | `IlsanTerracePark02` 1층 | ✅ 워드마크 시안 (제공 파일) |
+| `droptop` | 드롭탑 | `IlsanTerracePark02` 1층 | ✅ 워드마크 시안 (제공 파일) |
+| `ogada` | 오가다 | `IlsanTerracePark02` 1층 | ✅ 워드마크 시안 (제공 파일) |
 
 간판 문구와 키의 연결은 `designs.BRAND_LOGOS` 에 있습니다.
 
